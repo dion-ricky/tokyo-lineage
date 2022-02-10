@@ -29,6 +29,14 @@ class AirflowExtractor(BaseExtractor):
     def __init__(self):
         super(AirflowExtractor, self).__init__()
 
+    def get_extractor(
+        self,
+        task: Type[BaseTask]
+    ) -> Type[BaseMetadataExtractor]:
+        extractor = super().get_extractor(task)
+
+        return extractor if extractor is not None else AirflowMetaExtractor(task)
+
     def handle_job_run(self, job: DagRun):
         dagbag = get_dagbag()
         task_instances = get_task_instances_from_dagrun(job)
@@ -55,14 +63,6 @@ class AirflowExtractor(BaseExtractor):
         _task = AirflowTask(task_id, operator, task, task_instance, dag)
         job = AirflowDag(dag.dag_id, dag, dagrun)
         self.handle_task_run(_task, job)
-
-    def get_extractor(
-        self,
-        task: Type[BaseTask]
-    ) -> Type[BaseMetadataExtractor]:
-        extractor = super().get_extractor(task)
-
-        return extractor if extractor is not None else AirflowMetaExtractor(task)
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):
         # Register start_task

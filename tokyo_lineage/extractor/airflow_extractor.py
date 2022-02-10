@@ -95,9 +95,10 @@ class AirflowExtractor(BaseExtractor):
         event_time = DagUtils.to_iso_8601(task_instance.start_date)
         parent_run_id = dagrun.run_id
         code_location = get_location(dag.full_filepath)
-        # TODO: #5 Task to register may not have start_date and/or end_date yet
-        nominal_start_time = DagUtils.to_iso_8601(task_instance.start_date)
-        nominal_end_time = DagUtils.to_iso_8601(task_instance.end_date)
+        nominal_start_time = DagUtils.get_start_time(task_instance.execution_date)
+        nominal_end_time = DagUtils.get_end_time(
+            task_instance.execution_date,
+            dag.following_schedule(task_instance.execution_date))
         run_facets = {**task_metadata.run_facets, **get_custom_facets(_task, dagrun.external_trigger)}
 
         self.register_task_start(

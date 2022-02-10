@@ -80,7 +80,7 @@ class AirflowExtractor(BaseExtractor):
         job_description = dag.description
         event_time = DagUtils.to_iso_8601(task_instance.start_date)
         parent_run_id = dagrun.run_id
-        code_location = '' # TODO: #2 Create utility class to get code location
+        code_location = get_location(dag.full_filepath) # TODO: #2 Create utility class to get code location
         nominal_start_time = DagUtils.to_iso_8601(task_instance.start_date)
         nominal_end_time = DagUtils.to_iso_8601(task_instance.end_date)
         run_facets = {**task_metadata.run_facets, **get_custom_facets(_task, dagrun.external_trigger)}

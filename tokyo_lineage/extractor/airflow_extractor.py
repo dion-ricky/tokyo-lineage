@@ -22,7 +22,8 @@ from tokyo_lineage.utils.airflow import (
     get_task_instances_from_dagrun,
     get_dag_from_dagbag,
     get_task_from_dag,
-    instantiate_task_from_ti
+    instantiate_task_from_ti,
+    get_location
 )
 
 class AirflowExtractor(BaseExtractor):
@@ -85,7 +86,7 @@ class AirflowExtractor(BaseExtractor):
         job_description = dag.description
         event_time = DagUtils.to_iso_8601(task_instance.start_date)
         parent_run_id = dagrun.run_id
-        code_location = get_location(dag.full_filepath) # TODO: #2 Create utility class to get code location
+        code_location = get_location(dag.full_filepath)
         nominal_start_time = DagUtils.to_iso_8601(task_instance.start_date)
         nominal_end_time = DagUtils.to_iso_8601(task_instance.end_date)
         run_facets = {**task_metadata.run_facets, **get_custom_facets(_task, dagrun.external_trigger)}

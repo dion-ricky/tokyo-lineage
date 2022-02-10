@@ -7,6 +7,8 @@ from airflow.utils.db import create_session
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
 
+from openlineage.airflow.utils import get_location as openlineage_get_location
+
 def get_dagbag():
     from airflow.models.dagbag import DagBag # Prevent circular import
     return DagBag()
@@ -57,3 +59,8 @@ def instantiate_task_from_ti(task: Type[BaseOperator], task_instance: TaskInstan
     task_instance.render_templates()
 
     return task, task_instance
+
+def get_location(file_path) -> str:
+    location = openlineage_get_location(file_path)
+
+    return location if location is not None else file_path

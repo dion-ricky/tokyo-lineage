@@ -60,6 +60,10 @@ def instantiate_task_from_ti(task: Type[BaseOperator], task_instance: TaskInstan
 
     return task, task_instance
 
+def get_template_context(task_instance: TaskInstance):
+    with create_session() as session:
+        return task_instance.get_template_context(session)
+
 def get_location(file_path) -> str:
     location = openlineage_get_location(file_path)
 

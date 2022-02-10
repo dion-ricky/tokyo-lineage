@@ -7,10 +7,18 @@ from airflow.models.dagbag import DagBag
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
 
-from tokyo_lineage.utils.airflow import get_dagruns, get_dagbag, \
-    get_dag_from_dagbag, get_task_instances, get_task_from_dag, \
-    instantiate_task, instantiate_task_from_ti, get_task_instance_from_dagrun,\
-    get_task_instances_from_dagrun
+from tokyo_lineage.utils.airflow import (
+    get_dagruns,
+    get_dagbag,
+    get_dag_from_dagbag,
+    get_task_instances,
+    get_task_from_dag,
+    instantiate_task,
+    instantiate_task_from_ti,
+    get_task_instance_from_dagrun,
+    get_task_instances_from_dagrun,
+    get_template_context
+)
 
 class TestUtils(unittest.TestCase):
 
@@ -129,3 +137,17 @@ class TestUtils(unittest.TestCase):
         task, _ = instantiate_task_from_ti(task, ti)
 
         self.assertEqual(ti.task, task)
+    
+    def test_get_template_context(self):
+        dagbag = get_dagbag()
+        dag = get_dag_from_dagbag(dagbag, 'example_bash_operator')
+        task = get_task_from_dag(dag, "runme_1")
+        ti = get_task_instances(TaskInstance.task_id == 'runme_1')[-1]
+
+        self.assertIsInstance(task, BaseOperator)
+
+        task, _ = instantiate_task_from_ti(task, ti)
+
+        self.assertEqual(ti.task, task)
+
+        get_template_context(ti)

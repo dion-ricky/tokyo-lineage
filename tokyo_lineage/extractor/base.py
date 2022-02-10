@@ -6,6 +6,7 @@ from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.facets import BaseFacet
 
 from tokyo_lineage.models.base import BaseTask
+from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.metadata_extractor.airflow_default import AIRFLOW_EXTRACTORS
 
 _ADAPTER = OpenLineageAdapter()
@@ -15,7 +16,10 @@ class BaseExtractor(ABC):
         self.metadata_extractors = AIRFLOW_EXTRACTORS
         self.register_custom_metadata_extractors(custom_metadata_extractors)
 
-    def get_extractor(self, task: Type[BaseTask]):
+    def get_extractor(
+        self,
+        task: Type[BaseTask]
+    ) -> Type[BaseMetadataExtractor]:
         for meta_extractor in self.metadata_extractors:
             if task.operator in meta_extractor.get_operator_classnames():
                 return meta_extractor

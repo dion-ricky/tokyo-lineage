@@ -74,10 +74,18 @@ class BaseExtractor(ABC):
         )
     
     def register_task_finish(
-        self
+        self,
+        task_run_id: str,
+        job_name: str,
+        end_time: str,
+        task_metadata: TaskMetadata
     ):
-        # TODO: #3 Create register task finish
-        pass
+        _ADAPTER.complete_task(
+            task_run_id,
+            job_name,
+            end_time,
+            task_metadata
+        )
 
     def register_task_fail(
         self

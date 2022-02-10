@@ -1,7 +1,20 @@
 from typing import List
 from abc import ABC, abstractmethod
 
+from tokyo_lineage.models.base_task import BaseTask
+from tokyo_lineage.metadata_extractor.airflow_default import AIRFLOW_EXTRACTORS
+
 class BaseExtractor(ABC):
+    def __init__(self, custom_metadata_extractors):
+        self.metadata_extractors = AIRFLOW_EXTRACTORS
+        self.register_custom_metadata_extractors(custom_metadata_extractors)
+
+    def register_custom_metadata_extractors(self, metadata_extractors):
+        self.metadata_extractors += metadata_extractors
+
+    def get_extractor(self, task: BaseTask):
+        pass
+
     @abstractmethod
     def handle_job_run(self, job):
         pass

@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from airflow.operators import BaseOperator
+from airflow.models import BaseOperator
 from airflow.models.dag import DAG
 from airflow.models.dagbag import DagBag
 from airflow.models.dagrun import DagRun

@@ -65,10 +65,10 @@ class AirflowExtractor(BaseExtractor):
         return extractor if extractor is not None else AirflowMetaExtractor(task)
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):
-        # register start_task
+        # Register start_task
         self._register_task_start(task, job)
 
-        # register finish_task or fail_task
+        # Register finish_task or fail_task
         if task.task_instance.state == State.SUCCESS:
             self._register_task_finish(task)
         else:

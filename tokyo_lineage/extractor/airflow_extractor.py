@@ -4,7 +4,7 @@ from airflow.models import BaseOperator
 from airflow.models.taskinstance import TaskInstance
 
 from tokyo_lineage.extractor.base import BaseExtractor
-from tokyo_lineage.models.base_task import BaseTask
+from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.utils.airflow import get_dagbag, \
     get_task_instances_from_dagrun, get_dag_from_dagbag, get_task_from_dag, \

@@ -1,7 +1,7 @@
 from typing import List
 from abc import ABC, abstractmethod
 
-from tokyo_lineage.models.base_task import BaseTask
+from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.metadata_extractor.airflow_default import AIRFLOW_EXTRACTORS
 
 class BaseExtractor(ABC):

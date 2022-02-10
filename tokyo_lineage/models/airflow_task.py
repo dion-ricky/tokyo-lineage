@@ -3,7 +3,7 @@ import attr
 from airflow.models import BaseOperator
 from airflow.models.taskinstance import TaskInstance
 
-from tokyo_lineage.models.base_task import BaseTask
+from tokyo_lineage.models.base import BaseTask
 
 class AirflowTaskMismatch(Exception):
     pass

@@ -1,10 +1,11 @@
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 from airflow.operators import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
 from tokyo_lineage.extractor.airflow_extractor import AirflowExtractor
+from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.utils.airflow import get_dagruns
 
 class ExtractLineageOperator(BaseOperator):
@@ -16,6 +17,7 @@ class ExtractLineageOperator(BaseOperator):
     def __init__(
         self,
         dagrun_filters: Optional[Tuple] = (),
+        custom_metadata_extractors: Optional[List[BaseMetadataExtractor]] = None,
         *args,
         **kwargs):
         super(ExtractLineageOperator, self).__init__(*args, **kwargs)

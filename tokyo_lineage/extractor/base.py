@@ -6,7 +6,6 @@ from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.facets import BaseFacet
 
 from tokyo_lineage.models.base import BaseTask
-from tokyo_lineage.const.state import TaskState
 from tokyo_lineage.metadata_extractor.airflow_default import AIRFLOW_EXTRACTORS
 
 _ADAPTER = OpenLineageAdapter()

@@ -36,20 +36,28 @@ class AirflowExtractor(BaseExtractor):
         extractor = super().get_extractor(task)
 
         return extractor if extractor is not None else AirflowMetaExtractor(task)
-
-    def handle_job_run(self, job: DagRun):
+    
+    def handle_jobs_from_dagrun(self, _jobs: List[DagRun]):
+        jobs = []
         dagbag = get_dagbag()
-        task_instances = get_task_instances_from_dagrun(job)
-        dag = get_dag_from_dagbag(dagbag, job.dag_id)
+
+        for job in _jobs:
+            dag = get_dag_from_dagbag(dagbag, job.dag_id)
+            jobs.append(AirflowDag(dag.dag_id, dag, job))
+
+        return super().handle_jobs_run(jobs)
+
+    def handle_job_run(self, job: AirflowDag):
+        task_instances = get_task_instances_from_dagrun(job.dagrun)
 
         if len(task_instances) < 1:
             return
 
         for task_instance in task_instances:
-            _task = get_task_from_dag(dag, task_instance.task_id)
+            _task = get_task_from_dag(job.dag, task_instance.task_id)
             _task, _ = instantiate_task_from_ti(_task, task_instance)
 
-            self._handle_task_run(_task, task_instance, dag, job)
+            self._handle_task_run(_task, task_instance, job.dag, job.dagrun)
     
     def _handle_task_run(
         self,

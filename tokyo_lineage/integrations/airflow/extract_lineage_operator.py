@@ -33,7 +33,7 @@ class ExtractLineageOperator(BaseOperator):
         extractor = AirflowExtractor()
 
         logging.info("Calling JobRun handler")
-        extractor.handle_jobs_run(dagruns)
+        extractor.handle_jobs_from_dagrun(dagruns)
 
         logging.info("Finished extracting lineage")
         logging.info("INFO: Processed {} jobs".format(len(dagruns)))

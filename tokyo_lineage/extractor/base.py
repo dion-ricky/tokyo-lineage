@@ -76,11 +76,13 @@ class BaseExtractor(ABC):
     def register_task_finish(
         self
     ):
+        # TODO: #3 Create register task finish
         pass
 
     def register_task_fail(
         self
     ):
+        # TODO: #4 Create register task fail
         pass
 
     def register_custom_metadata_extractors(self, metadata_extractors):

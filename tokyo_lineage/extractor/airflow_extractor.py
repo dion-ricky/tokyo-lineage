@@ -1,9 +1,10 @@
-from typing import Type
+from typing import Optional, Type, List
 
 from airflow.models import BaseOperator, DAG
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
 from airflow.utils.state import State
+from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.utils import (
     DagUtils,
     get_location,
@@ -12,6 +13,7 @@ from openlineage.airflow.utils import (
 )
 
 from tokyo_lineage.extractor.base import BaseExtractor
+from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.base import BaseJob, BaseTask
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.models.airflow_dag import AirflowDag
@@ -48,15 +50,16 @@ class AirflowExtractor(BaseExtractor):
         dag: DAG,
         dagrun: DagRun
     ):
-        _task = AirflowTask(task.task_id, task, task_instance, dag)
-        job = AirflowDag(dag, dagrun)
+        task_id = task.task_id
+        operator = task_instance.operator
+        _task = AirflowTask(task_id, operator, task, task_instance, dag)
+        job = AirflowDag(dag.dag_id, dag, dagrun)
         self.handle_task_run(_task, job)
 
     def get_extractor(self, task: Type[BaseTask]):
         extractor = super().get_extractor(task)
 
-        # TODO: #1 Create general meta extractor to support any task
-        return extractor if extractor is not None else None
+        return extractor if extractor is not None else AirflowMetaExtractor
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):
         # register start_task
@@ -74,7 +77,7 @@ class AirflowExtractor(BaseExtractor):
         dag = job.dag
         dagrun = job.dagrun
 
-        meta_extractor = self.get_extractor(task)
+        meta_extractor = self.get_extractor(task)(task, job)
         task_metadata = meta_extractor.extract(_task)
 
         run_id = new_lineage_run_id(dag.dag_id, task.task_id)
@@ -98,4 +101,20 @@ class AirflowExtractor(BaseExtractor):
             nominal_end_time,
             task_metadata,
             run_facets
+        )
+
+class AirflowMetaExtractor(BaseMetadataExtractor):
+    def __init__(self, task, job):
+        super(AirflowMetaExtractor, self).__init__(task, job)
+
+    @classmethod
+    def get_operator_classnames(cls) -> List[str]:
+        return ['*']
+    
+    def validate(self):
+        assert True
+    
+    def extract(self) -> Optional[TaskMetadata]:
+        return TaskMetadata(
+            name=f'{self.job.job_id}.{self.task.task_id}'
         )

@@ -4,11 +4,12 @@ import unittest
 from unittest.mock import Mock, MagicMock, PropertyMock
 
 from openlineage.airflow.utils import get_custom_facets
+from openlineage.airflow.extractors.base import TaskMetadata
 
 from tokyo_lineage.utils.airflow import get_dagruns, get_location
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.models.airflow_dag import AirflowDag
-from tokyo_lineage.extractor.airflow_extractor import AirflowExtractor
+from tokyo_lineage.extractor.airflow_extractor import AirflowExtractor, AirflowMetaExtractor
 
 class TestAirflowExctractor(unittest.TestCase):
     
@@ -73,3 +74,23 @@ class TestAirflowExctractor(unittest.TestCase):
         #     extractor.get_extractor(task).extract(),
         #     get_custom_facets(_task, dagrun.external_trigger)
         # )
+    
+    def test_airflow_meta_extractor(self):
+        task_id = 'test_task'
+        operator = 'test_operator'
+
+        _task = Mock()
+        _task.task_id = task_id
+        _task.dag_id = 'test_dag'
+
+        task_instance = Mock()
+        task_instance.task_id = task_id
+        task_instance.operator = operator
+        task_instance.start_date = datetime(2022, 2, 10, 7, 0, 0)
+        task_instance.end_date = datetime(2022, 2, 10, 8, 0, 0)
+
+        task = AirflowTask(task_id, operator, _task, task_instance)
+
+        meta_extractor = AirflowMetaExtractor(task)
+
+        self.assertEqual(meta_extractor.extract(), TaskMetadata(name='test_dag.test_task'))

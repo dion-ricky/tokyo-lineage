@@ -4,8 +4,8 @@ from typing import Optional, Tuple
 from airflow.operators import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-from extractor.airflow_extractor import AirflowExtractor
-from utils.airflow import get_dagruns
+from tokyo_lineage.extractor.airflow_extractor import AirflowExtractor
+from tokyo_lineage.utils.airflow import get_dagruns
 
 class ExtractLineageOperator(BaseOperator):
     

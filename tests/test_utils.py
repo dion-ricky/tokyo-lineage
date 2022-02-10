@@ -46,6 +46,19 @@ class TestUtils(unittest.TestCase):
         
         self.assertIsInstance(dag, DAG)
     
+    def test_get_dag_fullpath(self):
+        dagbag = get_dagbag()
+        
+        dag = get_dag_from_dagbag(dagbag, 'example_bash_operator')
+        
+        self.assertIsInstance(dag, DAG)
+
+        full_filepath = dag.full_filepath
+
+        print(full_filepath)
+
+        self.assertIsInstance(full_filepath, str)
+    
     def test_get_task_instances(self):
         task_instances = get_task_instances()
 

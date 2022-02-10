@@ -7,7 +7,6 @@ from airflow.utils.state import State
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.utils import (
     DagUtils,
-    get_location,
     get_custom_facets,
     new_lineage_run_id
 )
@@ -57,10 +56,13 @@ class AirflowExtractor(BaseExtractor):
         job = AirflowDag(dag.dag_id, dag, dagrun)
         self.handle_task_run(_task, job)
 
-    def get_extractor(self, task: Type[BaseTask]):
+    def get_extractor(
+        self,
+        task: Type[BaseTask]
+    ) -> Type[BaseMetadataExtractor]:
         extractor = super().get_extractor(task)
 
-        return extractor if extractor is not None else AirflowMetaExtractor
+        return extractor if extractor is not None else AirflowMetaExtractor(task)
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):
         # register start_task
@@ -78,8 +80,8 @@ class AirflowExtractor(BaseExtractor):
         dag = job.dag
         dagrun = job.dagrun
 
-        meta_extractor = self.get_extractor(task)(task, job)
-        task_metadata = meta_extractor.extract(_task)
+        meta_extractor = self.get_extractor(task)
+        task_metadata = meta_extractor.extract()
 
         run_id = new_lineage_run_id(dag.dag_id, task.task_id)
         job_name = f'{dag.dag_id}.{task.task_id}'
@@ -105,8 +107,8 @@ class AirflowExtractor(BaseExtractor):
         )
 
 class AirflowMetaExtractor(BaseMetadataExtractor):
-    def __init__(self, task, job):
-        super(AirflowMetaExtractor, self).__init__(task, job)
+    def __init__(self, task):
+        super(AirflowMetaExtractor, self).__init__(task)
 
     @classmethod
     def get_operator_classnames(cls) -> List[str]:
@@ -117,5 +119,5 @@ class AirflowMetaExtractor(BaseMetadataExtractor):
     
     def extract(self) -> Optional[TaskMetadata]:
         return TaskMetadata(
-            name=f'{self.job.job_id}.{self.task.task_id}'
+            name=f'{self.task.task.dag_id}.{self.task.task_id}'
         )

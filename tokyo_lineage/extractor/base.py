@@ -32,12 +32,12 @@ class BaseExtractor(ABC):
             self.handle_job_run(job)
 
     @abstractmethod
-    def handle_task_run(self, task):
+    def handle_task_run(self, task, job):
         pass
 
-    def handle_tasks_run(self, tasks: List):
+    def handle_tasks_run(self, job, tasks: List):
         for task in tasks:
-            self.handle_task_run(task)
+            self.handle_task_run(task, job)
     
     def register_task_start(
         self,

@@ -1,7 +1,7 @@
 from typing import Type, List
 from abc import ABC, abstractmethod, abstractclassmethod
 
-from tokyo_lineage.models.base import BaseTask, BaseJob
+from tokyo_lineage.models.base import BaseTask
 
 class BaseMetadataExtractor(ABC):
     def __init__(self, task: Type[BaseTask]):

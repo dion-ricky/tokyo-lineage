@@ -1,15 +1,14 @@
 from random import randrange
 from typing import Optional, Type, List
 
-from airflow.models import BaseOperator, DAG
+from airflow.models import BaseOperator
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
 from airflow.utils.state import State
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.utils import (
     DagUtils,
-    get_custom_facets,
-    new_lineage_run_id
+    get_custom_facets
 )
 
 from tokyo_lineage.extractor.base import BaseExtractor

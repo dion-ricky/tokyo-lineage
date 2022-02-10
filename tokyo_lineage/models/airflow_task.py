@@ -8,6 +8,9 @@ from tokyo_lineage.models.base_task import BaseTask
 class AirflowTaskMismatch(Exception):
     pass
 
+class AirflowOperatorMismatch(Exception):
+    pass
+
 @attr.s
 class AirflowTask(BaseTask):
     task: BaseOperator = attr.ib(init=True, default=None)
@@ -19,5 +22,11 @@ class AirflowTask(BaseTask):
             assert (self.task.task_id == value.task_id) and \
                     (value.task_id == self.task_id)
         except:
-            raise AirflowTaskMismatch("Operator and TaskInstance task_id should match."\
+            raise AirflowTaskMismatch("Task and TaskInstance task_id should match."\
                     "{} != {}".format(self.task.task_id, value.task_id))
+        
+        try:
+            assert (self.operator == value.operator)
+        except:
+            raise AirflowOperatorMismatch("Operator name should match."\
+                "{} != {}".format(self.operator, value.operator))

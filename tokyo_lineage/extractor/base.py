@@ -2,6 +2,7 @@ from typing import List
 from abc import ABC, abstractmethod
 
 from tokyo_lineage.models.base import BaseTask
+from tokyo_lineage.const.state import TaskState
 from tokyo_lineage.metadata_extractor.airflow_default import AIRFLOW_EXTRACTORS
 
 class BaseExtractor(ABC):
@@ -35,7 +36,5 @@ class BaseExtractor(ABC):
         for task in tasks:
             self.handle_task_run(task)
     
-    # blueprint
-    @abstractmethod
-    def report_task(self, task):
+    def report_task(self, task: BaseTask, state: TaskState):
         pass

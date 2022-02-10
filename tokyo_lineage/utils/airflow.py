@@ -1,3 +1,4 @@
+from typing import Type
 from datetime import datetime
 
 from airflow.operators import BaseOperator
@@ -42,7 +43,7 @@ def get_dag_from_dagbag(dagbag, dag_id: str):
 def get_task_from_dag(dag: AIRFLOW_DAG, task_id: str):
     return dag.get_task(task_id)
 
-def instantiate_task(task: BaseOperator, execution_date: datetime):
+def instantiate_task(task: Type[BaseOperator], execution_date: datetime):
     task_instance = TaskInstance(task=task, execution_date=execution_date)
     
     task_instance.refresh_from_db()
@@ -50,7 +51,7 @@ def instantiate_task(task: BaseOperator, execution_date: datetime):
 
     return task, task_instance
 
-def instantiate_task_from_ti(task: BaseOperator, task_instance: TaskInstance):
+def instantiate_task_from_ti(task: Type[BaseOperator], task_instance: TaskInstance):
     task_instance.task = task
     task_instance.refresh_from_db()
     task_instance.render_templates()

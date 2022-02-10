@@ -1,3 +1,5 @@
+from typing import Type
+
 from airflow.models.dagrun import DagRun
 
 from airflow.models import BaseOperator
@@ -30,24 +32,24 @@ class AirflowExtractor(BaseExtractor):
     
     def _handle_task_run(
         self,
-        task: BaseOperator,
+        task: Type[BaseOperator],
         task_instance: TaskInstance
     ):
         _task = AirflowTask(task.task_id, task, task_instance)
         self.handle_task_run(_task)
 
-    def get_extractor(self, task: BaseTask):
+    def get_extractor(self, task: Type[BaseTask]):
         extractor = super().get_extractor(task)
 
         # TODO: #1 Create general meta extractor to support any task
         return extractor if extractor is not None else None
 
-    def handle_task_run(self, task: AirflowTask):
+    def handle_task_run(self, task: Type[BaseTask]):
         meta_extractor = self.get_extractor(task)
         # extract metadata
+        task_metadata = meta_extractor.extract(task)
+        
         # register start_task
-        # register finish_task or fail_task
-        pass
 
-    def report_task(self, task: AirflowTask):
+        # register finish_task or fail_task
         pass

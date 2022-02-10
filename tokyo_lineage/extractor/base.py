@@ -12,9 +12,14 @@ from tokyo_lineage.metadata_extractor.airflow_default import AIRFLOW_EXTRACTORS
 _ADAPTER = OpenLineageAdapter()
 
 class BaseExtractor(ABC):
-    def __init__(self, custom_metadata_extractors):
+    def __init__(
+        self,
+        custom_metadata_extractors: Optional[List[BaseMetadataExtractor]] = None
+    ):
         self.metadata_extractors = AIRFLOW_EXTRACTORS
-        self.register_custom_metadata_extractors(custom_metadata_extractors)
+
+        if custom_metadata_extractors:
+            self.register_custom_metadata_extractors(custom_metadata_extractors)
 
     def get_extractor(
         self,
@@ -22,7 +27,7 @@ class BaseExtractor(ABC):
     ) -> Type[BaseMetadataExtractor]:
         for meta_extractor in self.metadata_extractors:
             if task.operator in meta_extractor.get_operator_classnames():
-                return meta_extractor
+                return meta_extractor(task)
         
         return None
 

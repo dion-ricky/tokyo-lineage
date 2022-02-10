@@ -28,5 +28,5 @@ class AirflowTask(BaseTask):
         try:
             assert (self.operator == value.operator)
         except:
-            raise AirflowOperatorMismatch("Operator name should match."\
+            raise AirflowOperatorMismatch("Operator name should match. Operator != TaskInstance.operator."\
                 "{} != {}".format(self.operator, value.operator))

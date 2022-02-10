@@ -13,7 +13,11 @@ class BaseExtractor(ABC):
         self.metadata_extractors += metadata_extractors
 
     def get_extractor(self, task: BaseTask):
-        pass
+        for meta_extractor in self.metadata_extractors:
+            if task.operator in meta_extractor.get_operator_classnames():
+                return meta_extractor
+        
+        return None
 
     @abstractmethod
     def handle_job_run(self, job):

@@ -2,7 +2,7 @@ from typing import Type
 from datetime import datetime
 
 from airflow.operators import BaseOperator
-from airflow.models import DAG as AIRFLOW_DAG
+from airflow.models import DAG as AirflowDag
 from airflow.utils.db import create_session
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
@@ -40,7 +40,7 @@ def get_task_instance_from_dagrun(dagrun: DagRun, task_id: str):
 def get_dag_from_dagbag(dagbag, dag_id: str):
     return dagbag.get_dag(dag_id)
 
-def get_task_from_dag(dag: AIRFLOW_DAG, task_id: str):
+def get_task_from_dag(dag: AirflowDag, task_id: str):
     return dag.get_task(task_id)
 
 def instantiate_task(task: Type[BaseOperator], execution_date: datetime):

@@ -4,12 +4,11 @@ from abc import ABC, abstractmethod, abstractclassmethod
 from tokyo_lineage.models.base import BaseTask, BaseJob
 
 class BaseMetadataExtractor(ABC):
-    def __init__(self, task: Type[BaseTask], job: Type[BaseJob]):
+    def __init__(self, task: Type[BaseTask]):
         self.task = task
-        self.job = job
 
     @abstractclassmethod
-    def get_operator_classnames(cls) -> List(str):
+    def get_operator_classnames(cls) -> List[str]:
         pass
     
     def validate(self):

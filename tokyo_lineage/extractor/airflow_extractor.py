@@ -45,7 +45,7 @@ class AirflowExtractor(BaseExtractor):
             dag = get_dag_from_dagbag(dagbag, job.dag_id)
             jobs.append(AirflowDag(dag.dag_id, dag, job))
 
-        return super().handle_jobs_run(jobs)
+        return self.handle_jobs_run(jobs)
 
     def handle_job_run(self, job: AirflowDag):
         task_instances = get_task_instances_from_dagrun(job.dagrun)
@@ -57,19 +57,17 @@ class AirflowExtractor(BaseExtractor):
             _task = get_task_from_dag(job.dag, task_instance.task_id)
             _task, _ = instantiate_task_from_ti(_task, task_instance)
 
-            self._handle_task_run(_task, task_instance, job.dag, job.dagrun)
+            self._handle_task_run(_task, task_instance, job)
     
     def _handle_task_run(
         self,
         task: Type[BaseOperator],
         task_instance: TaskInstance,
-        dag: DAG,
-        dagrun: DagRun
+        job: Type[BaseJob]
     ):
         task_id = task.task_id
         operator = task_instance.operator
-        _task = AirflowTask(task_id, operator, task, task_instance, dag)
-        job = AirflowDag(dag.dag_id, dag, dagrun)
+        _task = AirflowTask(task_id, operator, task, task_instance)
         self.handle_task_run(_task, job)
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):

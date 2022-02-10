@@ -3,6 +3,8 @@ from datetime import datetime
 import unittest
 from unittest.mock import Mock, MagicMock, PropertyMock
 
+from airflow.utils.state import State
+
 from openlineage.airflow.utils import get_custom_facets
 from openlineage.airflow.extractors.base import TaskMetadata
 
@@ -22,7 +24,7 @@ class TestAirflowExctractor(unittest.TestCase):
 
         extractor._handle_task_run = Mock()
 
-        extractor.handle_jobs_run(dagruns)
+        extractor.handle_jobs_from_dagrun(dagruns)
 
         extractor._handle_task_run.assert_called()
 
@@ -32,9 +34,14 @@ class TestAirflowExctractor(unittest.TestCase):
 
         _task = Mock()
         _task.task_id = task_id
+        _task.dag_id = 'test_dag'
+
         task_instance = Mock()
+        task_instance.state = State.SUCCESS
         task_instance.task_id = task_id
         task_instance.operator = operator
+        task_instance.try_number = 1
+        task_instance.execution_date = datetime(2022, 2, 10, 7, 0, 0)
         task_instance.start_date = datetime(2022, 2, 10, 7, 0, 0)
         task_instance.end_date = datetime(2022, 2, 10, 8, 0, 0)
 
@@ -62,18 +69,19 @@ class TestAirflowExctractor(unittest.TestCase):
 
         extractor.register_task_start.assert_called()
 
-        # extractor.register_task_start.assert_called_with(
-        #     'c733e2ab-8096-4c25-a12f-3bbfa1510de1',
-        #     'test_dag.test_task',
-        #     'Test DAG',
-        #     '2022-02-10T07:00:00.000000Z',
-        #     'scheduled__test_run',
-        #     get_location(dag.full_filepath),
-        #     '2022-02-10T07:00:00.000000Z',
-        #     '2022-02-10T08:00:00.000000Z',
-        #     extractor.get_extractor(task).extract(),
-        #     get_custom_facets(_task, dagrun.external_trigger)
-        # )
+        # TODO: #7 get_end_time of DAG should get from task_instance.end_date if available
+        extractor.register_task_start.assert_called_with(
+            '40722faaca4b80d64dbfd04f32bfdbb0bc2db0f9',
+            'test_dag.test_task',
+            'Test DAG',
+            '2022-02-10T07:00:00.000000Z',
+            'scheduled__test_run',
+            get_location(dag.full_filepath),
+            '2022-02-10T07:00:00.000000Z',
+            '2022-02-10T08:00:00.000000Z',
+            extractor.get_extractor(task).extract(),
+            get_custom_facets(_task, dagrun.external_trigger)
+        )
     
     def test_airflow_meta_extractor(self):
         task_id = 'test_task'
@@ -94,3 +102,43 @@ class TestAirflowExctractor(unittest.TestCase):
         meta_extractor = AirflowMetaExtractor(task)
 
         self.assertEqual(meta_extractor.extract(), TaskMetadata(name='test_dag.test_task'))
+    
+    def test_lineage_run_id(self):
+        task_id = 'test_task'
+        operator = 'test_operator'
+
+        _task = Mock()
+        _task.task_id = task_id
+        _task.dag_id = 'test_dag'
+
+        task_instance = Mock()
+        task_instance.state = State.SUCCESS
+        task_instance.task_id = task_id
+        task_instance.operator = operator
+        task_instance.try_number = 1
+        task_instance.execution_date = datetime(2022, 2, 10, 7, 0, 0)
+        task_instance.start_date = datetime(2022, 2, 10, 7, 0, 0)
+        task_instance.end_date = datetime(2022, 2, 10, 8, 0, 0)
+
+        task = AirflowTask(task_id, operator, _task, task_instance)
+
+        dag_id = 'test_dag'
+
+        dag = Mock()
+        dag.dag_id = dag_id
+        dag.description = 'Test DAG'
+        dag.full_filepath = os.path.abspath(__file__)
+        
+        dagrun = Mock()
+        dagrun.run_id = 'scheduled__test_run'
+        dagrun.external_trigger = False
+
+        job = AirflowDag(dag_id, dag, dagrun)
+
+        extractor = AirflowExtractor()
+        extractor.random_task_state = 11
+
+        run_id = extractor._new_lineage_run_id(task, job)
+        print(run_id)
+
+        self.assertEqual(run_id, '8a227704c7b9159a8ab59eaef836bd1e1401803a')

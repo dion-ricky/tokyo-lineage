@@ -4,6 +4,7 @@ from airflow.models import BaseOperator
 from airflow.models.taskinstance import TaskInstance
 
 from tokyo_lineage.extractor.base import BaseExtractor
+from tokyo_lineage.models.base_task import BaseTask
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.utils.airflow import get_dagbag, \
     get_task_instances_from_dagrun, get_dag_from_dagbag, get_task_from_dag, \
@@ -35,7 +36,14 @@ class AirflowExtractor(BaseExtractor):
         _task = AirflowTask(task.task_id, task, task_instance)
         self.handle_task_run(_task)
 
+    def get_extractor(self, task: BaseTask):
+        extractor = super().get_extractor(task)
+
+        # TODO: #1 Create general meta extractor to support any task
+        return extractor if extractor is not None else None
+
     def handle_task_run(self, task: AirflowTask):
+        meta_extractor = self.get_extractor(task)
         # extract metadata
         # register start_task
         # register finish_task or fail_task

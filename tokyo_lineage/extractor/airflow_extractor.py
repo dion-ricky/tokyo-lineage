@@ -3,8 +3,10 @@ from typing import Type
 from airflow.models import BaseOperator, DAG
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
+from airflow.utils.state import State
 from openlineage.airflow.utils import (
     DagUtils,
+    get_location,
     get_custom_facets,
     new_lineage_run_id
 )
@@ -61,10 +63,10 @@ class AirflowExtractor(BaseExtractor):
         self._register_task_start(task, job)
 
         # register finish_task or fail_task
-        if task.task_instance.state == 'FAILED':
-            self._register_task_fail(task)
-        else:
+        if task.task_instance.state == State.SUCCESS:
             self._register_task_finish(task)
+        else:
+            self._register_task_fail(task)
     
     def _register_task_start(self, task: AirflowTask, job: AirflowDag):
         _task = task.task

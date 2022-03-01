@@ -5,10 +5,13 @@ from airflow.models import BaseOperator
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
 from airflow.utils.state import State
+from airflow.utils.db import create_session
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.utils import (
     DagUtils,
-    get_custom_facets
+    JobIdMapping,
+    get_custom_facets,
+    new_lineage_run_id
 )
 
 from tokyo_lineage.extractor.base import BaseExtractor
@@ -25,6 +28,9 @@ from tokyo_lineage.utils.airflow import (
     instantiate_task_from_ti,
     get_location
 )
+
+def openlineage_job_name(dag_id: str, task_id: str) -> str:
+    return f'{dag_id}.{task_id}'
 
 class AirflowExtractor(BaseExtractor):
     def __init__(self):
@@ -73,9 +79,6 @@ class AirflowExtractor(BaseExtractor):
         self.handle_task_run(_task, job)
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):
-        # Generate task_state random to generate unique run_id. See issue#6
-        self.random_task_state = randrange(0, 999)
-
         # Register start_task
         self._register_task_start(task, job)
 
@@ -94,7 +97,7 @@ class AirflowExtractor(BaseExtractor):
         meta_extractor = self.get_extractor(task)
         task_metadata = meta_extractor.extract()
 
-        run_id = self._new_lineage_run_id(task, job)
+        run_id = new_lineage_run_id(dagrun.run_id, task.task_id)
         job_name = f'{dag.dag_id}.{task.task_id}'
         job_description = dag.description
         event_time = DagUtils.get_start_time(task_instance.execution_date)
@@ -126,10 +129,32 @@ class AirflowExtractor(BaseExtractor):
         dagrun = job.dagrun
         
         meta_extractor = self.get_extractor(task)
+
+        with create_session() as session:
+            task_run_id = JobIdMapping.pop(
+                self._openlineage_job_name_from_task_instance(task_instance), dagrun.run_id, session)
+
         task_metadata = meta_extractor.extract()
 
-        task_run_id = self._new_lineage_run_id(task, job)
-        job_name = f'{dag.dag_id}.{task.task_id}'
+        # Note: task_run_id could be missing if it was removed from airflow
+        # or the job could not be registered.
+        job_name = openlineage_job_name(dag.dag_id, task.task_id)
+        run_id = new_lineage_run_id(dagrun.run_id, task.task_id)
+        
+        if not task_run_id:
+            task_run_id = self.register_task_start(
+                run_id,
+                job_name,
+                dag.description,
+                DagUtils.to_iso_8601(task_instance.start_date),
+                dagrun.run_id,
+                get_location(dag.full_filepath),
+                DagUtils.to_iso_8601(task_instance.start_date),
+                DagUtils.to_iso_8601(task_instance.end_date),
+                task_metadata,
+                {**task_metadata.run_facets, **get_custom_facets(_task, dagrun.external_trigger)}
+            )
+
         end_date = DagUtils.to_iso_8601(task_instance.end_date)
 
         self.register_task_finish(
@@ -139,16 +164,9 @@ class AirflowExtractor(BaseExtractor):
             task_metadata
         )
     
-    def _new_lineage_run_id(self, task: AirflowTask, job: AirflowDag):
-        task_id = task.task_id
-        job_id = job.job_id
-        execution_date = DagUtils.to_iso_8601(task.task_instance.execution_date)
-        try_number = str(task.task_instance.try_number)
-        state = task.task_instance.state
-        random_state = str(self.random_task_state)
-
-        return sha1(''.join([
-            task_id, job_id, execution_date, try_number, state, random_state]))
+    @staticmethod
+    def _openlineage_job_name_from_task_instance(task_instance):
+        return openlineage_job_name(task_instance.dag_id, task_instance.task_id)
 
 class AirflowMetaExtractor(BaseMetadataExtractor):
     def __init__(self, task):

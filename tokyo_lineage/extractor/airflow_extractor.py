@@ -15,6 +15,7 @@ from openlineage.airflow.utils import (
 
 from tokyo_lineage.extractor.base import BaseExtractor
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
+from tokyo_lineage.metadata_extractor.airflow.airflow_default import AIRFLOW_EXTRACTORS
 from tokyo_lineage.models.base import BaseJob, BaseTask
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.models.airflow_dag import AirflowDag
@@ -31,8 +32,11 @@ def openlineage_job_name(dag_id: str, task_id: str) -> str:
     return f'{dag_id}.{task_id}'
 
 class AirflowExtractor(BaseExtractor):
-    def __init__(self):
-        super(AirflowExtractor, self).__init__()
+    def __init__(self, custom_metadata_extractor):
+        metadata_extractor = AIRFLOW_EXTRACTORS
+        metadata_extractor += custom_metadata_extractor
+
+        super(AirflowExtractor, self).__init__(metadata_extractor)
         self.random_task_state = None
 
     def get_extractor(

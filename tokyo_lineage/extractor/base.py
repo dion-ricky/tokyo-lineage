@@ -60,7 +60,7 @@ class BaseExtractor(ABC):
         task: Optional[TaskMetadata],
         run_facets: Optional[Dict[str, Type[BaseFacet]]] = None
     ):
-        _ADAPTER.start_task(
+        return _ADAPTER.start_task(
             run_id,
             job_name,
             job_description,

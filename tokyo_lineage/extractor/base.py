@@ -88,10 +88,18 @@ class BaseExtractor(ABC):
         )
 
     def register_task_fail(
-        self
+        self,
+        task_run_id: str,
+        job_name: str,
+        end_time: str,
+        task_metadata: TaskMetadata
     ):
-        # TODO: #4 Create register task fail
-        pass
+        _ADAPTER.fail_task(
+            task_run_id,
+            job_name,
+            end_time,
+            task_metadata
+        )
 
     def register_custom_metadata_extractors(self, metadata_extractors):
         self.metadata_extractors += metadata_extractors

@@ -83,10 +83,7 @@ class AirflowExtractor(BaseExtractor):
         self._register_task_start(task, job)
 
         # Register finish_task or fail_task
-        if task.task_instance.state == State.SUCCESS:
-            self._register_task_finish(task)
-        else:
-            self._register_task_fail(task)
+        self._register_task_state(task, job)
     
     def _register_task_start(self, task: AirflowTask, job: AirflowDag):
         _task = task.task
@@ -126,7 +123,7 @@ class AirflowExtractor(BaseExtractor):
             run_facets
         )
     
-    def _register_task_finish(self, task: AirflowTask, job: AirflowDag):
+    def _register_task_state(self, task: AirflowTask, job: AirflowDag):
         _task = task.task
         task_instance = task.task_instance
         dag = job.dag
@@ -160,13 +157,21 @@ class AirflowExtractor(BaseExtractor):
             )
 
         end_date = DagUtils.to_iso_8601(task_instance.end_date)
-
-        self.register_task_finish(
-            task_run_id,
-            job_name,
-            end_date,
-            task_metadata
-        )
+        
+        if task.task_instance.state in {State.SUCCESS, State.SKIPPED}:
+            self.register_task_finish(
+                task_run_id,
+                job_name,
+                end_date,
+                task_metadata
+            )
+        else:
+            self.register_task_fail(
+                task_run_id,
+                job_name,
+                end_date,
+                task_metadata
+            )
     
     @staticmethod
     def _openlineage_job_name_from_task_instance(task_instance):

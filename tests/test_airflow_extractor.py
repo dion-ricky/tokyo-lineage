@@ -69,7 +69,6 @@ class TestAirflowExctractor(unittest.TestCase):
 
         extractor.register_task_start.assert_called()
 
-        # TODO: #7 get_end_time of DAG should get from task_instance.end_date if available
         extractor.register_task_start.assert_called_with(
             '40722faaca4b80d64dbfd04f32bfdbb0bc2db0f9',
             'test_dag.test_task',

@@ -1,4 +1,3 @@
-from random import randrange
 from typing import Optional, Type, List
 
 from airflow.models import BaseOperator
@@ -19,7 +18,6 @@ from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.base import BaseJob, BaseTask
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.models.airflow_dag import AirflowDag
-from tokyo_lineage.utils.hash import sha1
 from tokyo_lineage.utils.airflow import (
     get_dagbag,
     get_task_instances_from_dagrun,

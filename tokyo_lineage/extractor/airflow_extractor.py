@@ -32,11 +32,14 @@ def openlineage_job_name(dag_id: str, task_id: str) -> str:
     return f'{dag_id}.{task_id}'
 
 class AirflowExtractor(BaseExtractor):
-    def __init__(self, custom_metadata_extractor):
-        metadata_extractor = AIRFLOW_EXTRACTORS
-        metadata_extractor += custom_metadata_extractor
-
-        super(AirflowExtractor, self).__init__(metadata_extractor)
+    def __init__(
+        self,
+        custom_metadata_extractor: Optional[List[BaseMetadataExtractor]]
+    ):
+        super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS)
+        self.register_custom_metadata_extractors(
+            custom_metadata_extractor
+        )
         self.random_task_state = None
 
     def get_extractor(

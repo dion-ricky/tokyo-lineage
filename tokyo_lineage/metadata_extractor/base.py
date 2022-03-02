@@ -1,5 +1,7 @@
-from typing import Type, List
+from typing import Type, List, Optional
 from abc import ABC, abstractmethod, abstractclassmethod
+
+from openlineage.airflow.extractors.base import TaskMetadata
 
 from tokyo_lineage.models.base import BaseTask
 
@@ -15,5 +17,5 @@ class BaseMetadataExtractor(ABC):
         assert (self.task.operator in self.get_operator_classnames())
     
     @abstractmethod
-    def extract(self):
+    def extract(self) -> Optional[TaskMetadata]:
         pass

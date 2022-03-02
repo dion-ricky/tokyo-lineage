@@ -1,7 +1,9 @@
-from getpass import getuser
+import json
 import platform
+from getpass import getuser
 from typing import Type, List
 
+from avro import schema as avro_schema
 from contextlib import closing
 from typing import Optional, List
 from urllib.parse import urlparse
@@ -19,7 +21,7 @@ from openlineage.common.models import (
     DbColumn
 )
 from openlineage.common.sql import SqlMeta, SqlParser
-from openlineage.common.dataset import Source, Dataset
+from openlineage.common.dataset import Source, Dataset, Field
 
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.airflow_task import AirflowTask
@@ -93,7 +95,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             Dataset(
                 name=self._get_fs_name(),
                 source=filesystem_source,
-                fields=[] # TODO: #13 Extract fields from Avro schema file
+                fields=self._get_avro_fields()
             )
         ]
 
@@ -122,6 +124,35 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         dag_id = self.operator.dag_id
 
         return '_'.join([dag_id, 'temp_fs'])
+
+    def _get_avro_fields(self) -> List[Field]:
+        schema = self._get_avro_schema()
+        fields = schema.props['fields']
+
+        fields = [
+            Field(
+                name=f.name,
+                type=self._filter_avro_field_type(f.type._schemas)
+            ) for f in fields
+        ]
+
+        return fields
+    
+    def _get_avro_schema(self, schema: str = None):
+        if not schema:
+            avro_schema_json = json.loads(open(self.operator.avro_schema_path, 'r+').read())
+        else:
+            avro_schema_json = json.loads(schema)
+        
+        return avro_schema.parse(json.dumps(avro_schema_json))
+
+    def _filter_avro_field_type(self, field_types):
+        for f in field_types:
+            if f.type != 'null':
+                try:
+                    return f.logical_type
+                except:
+                    return f.type
 
     def _get_pg_connection_uri(self):
         return get_normalized_postgres_connection_uri(self.conn)

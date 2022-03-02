@@ -1,12 +1,14 @@
+import json
 import getpass
 import platform
 import unittest
 from datetime import datetime
 from unittest.mock import Mock
 
+from avro import schema
 from airflow.utils.state import State
 
-from openlineage.common.dataset import Source
+from openlineage.common.dataset import Source, Field
 
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.metadata_extractor.airflow.postgres_to_avro_extractor \
@@ -77,3 +79,56 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         self.assertEqual(fs_source.scheme, 'files')
         self.assertEqual(fs_source.authority, ':'.join([user, node]))
         self.assertEqual(fs_source.connection_url, node)
+    
+    def test_avro_fields_extract(self):
+        meta_extractor = self.meta_extractor        
+
+        _temp = meta_extractor._get_avro_schema
+
+        avro_schema_json = json.loads("""{
+        "name": "example_schema",
+        "namespace": "example.schema",
+        "type": "record",
+        "fields":[
+            {"name": "user_id", "type": ["string", "null"]},
+            {"name": "product_id","type": ["double","null"]},
+            {"name": "product_price","type": ["long","null"]},
+            {"name": "product_serial_number","type": ["int","null"]},
+            {"name": "mark_for_delete", "type": ["boolean", "null"]},
+            {"name": "created_date", "type":[{"logicalType": "timestamp-micros", "type": "long"},"null"]}
+        ]
+        }
+        """)
+
+        meta_extractor._get_avro_schema = lambda: schema.parse(json.dumps(avro_schema_json))
+
+        fields = [
+            Field(
+                name='user_id',
+                type='string'
+            ),
+            Field(
+                name='product_id',
+                type='double'
+            ),
+            Field(
+                name='product_price',
+                type='long'
+            ),
+            Field(
+                name='product_serial_number',
+                type='int'
+            ),
+            Field(
+                name='mark_for_delete',
+                type='boolean'
+            ),
+            Field(
+                name='created_date',
+                type='timestamp-micros'
+            )
+        ]
+
+        print(meta_extractor._get_avro_fields())
+
+        self.assertEqual(meta_extractor._get_avro_fields(), fields)

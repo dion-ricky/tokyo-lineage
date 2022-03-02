@@ -91,9 +91,9 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         
         outputs = [
             Dataset(
-                name='local_temp_fs', # TODO: Set dataset name specific to the executing DAG
+                name='local_temp_fs', # TODO: #12 Set dataset name specific to the executing DAG
                 source=filesystem_source,
-                fields=[] # TODO: Extract fields from Avro schema file
+                fields=[] # TODO: #13 Extract fields from Avro schema file
             )
         ]
 

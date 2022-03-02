@@ -1,3 +1,5 @@
+from getpass import getuser
+import platform
 from typing import Type, List
 
 from contextlib import closing
@@ -57,9 +59,9 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         # NOTE: We'll want to look into adding support for the `database`
         # property that is used to override the one defined in the connection.
         postgres_source = Source(
-            scheme=self._get_scheme(),
-            authority=self._get_authority(),
-            connection_url=self._get_connection_uri()
+            scheme=self._get_pg_scheme(),
+            authority=self._get_pg_authority(),
+            connection_url=self._get_pg_connection_uri()
         )
 
         database = self.operator.database
@@ -80,8 +82,21 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                 sql_meta.in_tables
             )
         ]
+
+        filesystem_source = Source(
+            scheme=self._get_fs_scheme(),
+            authority=self._get_fs_authority(),
+            connection_url=self._get_fs_connection_uri()
+        )
         
-        # TODO: #11 Override output, set to fs dataset
+        outputs = [
+            Dataset(
+                name='local_temp_fs', # TODO: Set dataset name specific to the executing DAG
+                source=filesystem_source,
+                fields=[] # TODO: Extract fields from Avro schema file
+            )
+        ]
+
         outputs = [
             Dataset.from_table_schema(
                 source=postgres_source,
@@ -101,10 +116,22 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             }
         )
     
-    def _get_connection_uri(self):
+    def _get_fs_scheme(self) -> str:
+        return 'files'
+
+    def _get_fs_connection_uri(self) -> str:
+        return platform.uname().node
+    
+    def _get_fs_authority(self) -> str:
+        user = getuser()
+        node = platform.uname().node
+
+        return ':'.join([user, node])
+    
+    def _get_pg_connection_uri(self):
         return get_normalized_postgres_connection_uri(self.conn)
 
-    def _get_scheme(self):
+    def _get_pg_scheme(self):
         return 'postgres'
 
     def _get_database(self) -> str:
@@ -114,7 +141,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             parsed = urlparse(self.conn.get_uri())
             return f'{parsed.path}'
 
-    def _get_authority(self) -> str:
+    def _get_pg_authority(self) -> str:
         if self.conn.host and self.conn.port:
             return f'{self.conn.host}:{self.conn.port}'
         else:
@@ -142,7 +169,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         )
         return PostgresHook(
             postgres_conn_id=self.operator.postgres_conn_id,
-            schema=self.operator.database
+            schema=self.conn.schema
         )
 
     def _get_table_schemas(

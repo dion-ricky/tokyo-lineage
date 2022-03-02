@@ -97,16 +97,6 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             )
         ]
 
-        outputs = [
-            Dataset.from_table_schema(
-                source=postgres_source,
-                table_schema=out_table_schema,
-                database_name=database
-            ) for out_table_schema in self._get_table_schemas(
-                sql_meta.out_tables
-            )
-        ]
-
         return TaskMetadata(
             name=f"{self.operator.dag_id}.{self.operator.task_id}",
             inputs=[ds.to_openlineage_dataset() for ds in inputs],

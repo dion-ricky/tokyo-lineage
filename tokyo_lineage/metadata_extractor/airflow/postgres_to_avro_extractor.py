@@ -91,7 +91,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         
         outputs = [
             Dataset(
-                name='local_temp_fs', # TODO: #12 Set dataset name specific to the executing DAG
+                name=self._get_fs_name(),
                 source=filesystem_source,
                 fields=[] # TODO: #13 Extract fields from Avro schema file
             )
@@ -118,6 +118,11 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
 
         return ':'.join([user, node])
     
+    def _get_fs_name(self) -> str:
+        dag_id = self.operator.dag_id
+
+        return '_'.join([dag_id, 'temp_fs'])
+
     def _get_pg_connection_uri(self):
         return get_normalized_postgres_connection_uri(self.conn)
 

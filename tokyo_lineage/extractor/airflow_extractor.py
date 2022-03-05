@@ -42,7 +42,6 @@ class AirflowExtractor(BaseExtractor):
             self.register_custom_metadata_extractors(
                 custom_metadata_extractor
             )
-        self.random_task_state = None
 
     def get_extractor(
         self,

@@ -5,7 +5,7 @@ from datetime import datetime
 from airflow.utils.state import State
 
 from tokyo_lineage.models.airflow_task import AirflowTask
-from tokyo_lineage.metadata_extractor.airflow.postgres_extractor import PostgresExtractor
+from tokyo_lineage.metadata_extractor.airflow import PostgresExtractor
 
 class TestPostgresMetaExtractor(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:

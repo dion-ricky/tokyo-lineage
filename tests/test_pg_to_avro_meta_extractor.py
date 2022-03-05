@@ -11,8 +11,7 @@ from airflow.utils.state import State
 from openlineage.common.dataset import Source, Field
 
 from tokyo_lineage.models.airflow_task import AirflowTask
-from tokyo_lineage.metadata_extractor.airflow.postgres_to_avro_extractor \
-    import PostgresToAvroExtractor
+from tokyo_lineage.metadata_extractor.airflow import PostgresToAvroExtractor
 
 class TestPgToAvroMetaExtractor(unittest.TestCase):
     def __init__(self, methodName: str = ...) -> None:

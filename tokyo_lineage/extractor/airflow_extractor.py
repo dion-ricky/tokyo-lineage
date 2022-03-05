@@ -37,9 +37,11 @@ class AirflowExtractor(BaseExtractor):
         custom_metadata_extractor: Optional[List[BaseMetadataExtractor]] = None
     ):
         super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS)
-        self.register_custom_metadata_extractors(
-            custom_metadata_extractor
-        )
+        
+        if custom_metadata_extractor:
+            self.register_custom_metadata_extractors(
+                custom_metadata_extractor
+            )
         self.random_task_state = None
 
     def get_extractor(

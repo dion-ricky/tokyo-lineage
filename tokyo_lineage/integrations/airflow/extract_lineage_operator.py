@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple, Type, List
+from typing import Optional, Tuple, Type, List, Callable, Any
 
 from airflow.operators import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -17,18 +17,24 @@ class ExtractLineageOperator(BaseOperator):
     def __init__(
         self,
         dagrun_filters: Optional[Tuple] = (),
+        dagrun_filters_with_context: Optional[List[Callable[[Any], Tuple]]] = None,
         custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None,
         *args,
         **kwargs):
         super(ExtractLineageOperator, self).__init__(*args, **kwargs)
-        self.dagrun_filters = dagrun_filters 
+        self.dagrun_filters = dagrun_filters
+        self.dagrun_filters_with_context = dagrun_filters_with_context
         self.custom_metadata_extractors = custom_metadata_extractors
     
     def execute(self, context):
         logging.info("Start extracting lineage")
 
         logging.info("Scanning Airflow DagRun")
-        dagruns = get_dagruns(self.dagrun_filters)
+        # Providing context to dagrun_filters_with_context
+        dagrun_filters_with_context = [f(context) for f in self.dagrun_filters_with_context]
+
+        dagrun_filters = self.dagrun_filters + dagrun_filters_with_context
+        dagruns = get_dagruns(dagrun_filters)
 
         logging.info("Instantiating extractor")
         extractor = AirflowExtractor(self.custom_metadata_extractors)

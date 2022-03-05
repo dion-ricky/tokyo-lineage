@@ -13,7 +13,7 @@ _ADAPTER = OpenLineageAdapter()
 class BaseExtractor(ABC):
     def __init__(
         self,
-        custom_metadata_extractors: Optional[List[BaseMetadataExtractor]] = None
+        custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None
     ):
         self.metadata_extractors = []
 
@@ -100,5 +100,5 @@ class BaseExtractor(ABC):
             task_metadata
         )
 
-    def register_custom_metadata_extractors(self, metadata_extractors):
+    def register_custom_metadata_extractors(self, metadata_extractors: List[Type[BaseMetadataExtractor]]):
         self.metadata_extractors += metadata_extractors

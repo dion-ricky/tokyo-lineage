@@ -34,7 +34,7 @@ def openlineage_job_name(dag_id: str, task_id: str) -> str:
 class AirflowExtractor(BaseExtractor):
     def __init__(
         self,
-        custom_metadata_extractor: Optional[List[BaseMetadataExtractor]] = None
+        custom_metadata_extractor: Optional[List[Type[BaseMetadataExtractor]]] = None
     ):
         super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS)
         
@@ -51,15 +51,15 @@ class AirflowExtractor(BaseExtractor):
 
         return extractor if extractor is not None else AirflowMetaExtractor(task)
     
-    def handle_jobs_from_dagrun(self, _jobs: List[DagRun]) -> None:
-        jobs = []
+    def handle_jobs_from_dagrun(self, jobs: List[DagRun]) -> None:
+        _jobs = []
         dagbag = get_dagbag()
 
-        for job in _jobs:
+        for job in jobs:
             dag = get_dag_from_dagbag(dagbag, job.dag_id)
-            jobs.append(AirflowDag(dag.dag_id, dag, job))
+            _jobs.append(AirflowDag(dag.dag_id, dag, job))
 
-        return self.handle_jobs_run(jobs)
+        return self.handle_jobs_run(_jobs)
 
     def handle_job_run(self, job: AirflowDag):
         task_instances = get_task_instances_from_dagrun(job.dagrun)

@@ -25,7 +25,7 @@ class BaseExtractor(ABC):
         task: Type[BaseTask]
     ) -> Type[BaseMetadataExtractor]:
         for meta_extractor in self.metadata_extractors:
-            if task.operator in meta_extractor.get_operator_classnames():
+            if task.operator_name in meta_extractor.get_operator_classnames():
                 return meta_extractor(task)
         
         return None

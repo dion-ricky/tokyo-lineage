@@ -22,6 +22,7 @@ class ExtractLineageOperator(BaseOperator):
         **kwargs):
         super(ExtractLineageOperator, self).__init__(*args, **kwargs)
         self.dagrun_filters = dagrun_filters 
+        self.custom_metadata_extractors = custom_metadata_extractors
     
     def execute(self, context):
         logging.info("Start extracting lineage")
@@ -30,7 +31,7 @@ class ExtractLineageOperator(BaseOperator):
         dagruns = get_dagruns(self.dagrun_filters)
 
         logging.info("Instantiating extractor")
-        extractor = AirflowExtractor()
+        extractor = AirflowExtractor(self.custom_metadata_extractors)
 
         logging.info("Calling JobRun handler")
         extractor.handle_jobs_from_dagrun(dagruns)

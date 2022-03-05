@@ -33,7 +33,10 @@ class ExtractLineageOperator(BaseOperator):
         # Providing context to dagrun_filters_with_context
         dagrun_filters_with_context = [f(context) for f in self.dagrun_filters_with_context]
 
-        dagrun_filters = self.dagrun_filters + dagrun_filters_with_context
+        dagrun_filters = self.dagrun_filters
+        for f in dagrun_filters_with_context:
+            dagrun_filters = dagrun_filters + f
+
         dagruns = get_dagruns(dagrun_filters)
 
         logging.info("Instantiating extractor")

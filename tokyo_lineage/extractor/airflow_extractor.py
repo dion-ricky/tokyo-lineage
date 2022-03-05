@@ -165,7 +165,7 @@ class AirflowExtractor(BaseExtractor):
 
         end_date = DagUtils.to_iso_8601(task_instance.end_date)
         
-        if task.task_instance.state in {State.SUCCESS, State.SKIPPED}:
+        if task_instance.state in {State.SUCCESS, State.SKIPPED}:
             self.register_task_finish(
                 task_run_id,
                 job_name,

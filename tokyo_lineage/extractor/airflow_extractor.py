@@ -79,8 +79,8 @@ class AirflowExtractor(BaseExtractor):
         job: Type[BaseJob]
     ):
         task_id = task.task_id
-        operator = task_instance.operator
-        _task = AirflowTask(task_id, operator, task, task_instance)
+        operator_name = task_instance.operator
+        _task = AirflowTask(task_id, operator_name, task, task_instance)
         self.handle_task_run(_task, job)
 
     def handle_task_run(self, task: Type[BaseTask], job: Type[BaseJob]):

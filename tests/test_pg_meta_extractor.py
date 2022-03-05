@@ -15,7 +15,7 @@ class TestPostgresMetaExtractor(unittest.TestCase):
         self.OPERATOR = 'test_operator'
 
         task_id = self.TASK_ID
-        operator = self.OPERATOR
+        operator_name = self.OPERATOR
 
         self.DAG_ID = 'test_dag'
         self.POSTGRES_CONN_ID = 'test_connection'
@@ -28,13 +28,13 @@ class TestPostgresMetaExtractor(unittest.TestCase):
         task_instance = Mock()
         task_instance.state = State.SUCCESS
         task_instance.task_id = task_id
-        task_instance.operator = operator
+        task_instance.operator = operator_name
         task_instance.try_number = 1
         task_instance.execution_date = datetime(2022, 2, 10, 7, 0, 0)
         task_instance.start_date = datetime(2022, 2, 10, 7, 0, 0)
         task_instance.end_date = datetime(2022, 2, 10, 8, 0, 0)
 
-        task = AirflowTask(task_id, operator, _task, task_instance)
+        task = AirflowTask(task_id, operator_name, _task, task_instance)
 
         meta_extractor = PostgresExtractor(task)
 

@@ -8,30 +8,30 @@ class TestTaskModel(unittest.TestCase):
 
     def test_airflow_task(self):
         test_task_id = 'test_task_id'
-        test_operator = 'test_operator'
+        test_operator_name = 'test_operator'
 
         task = MagicMock()
         task.task_id = test_task_id
 
         task_instance = MagicMock()
         task_instance.task_id = test_task_id
-        task_instance.operator = test_operator
+        task_instance.operator = test_operator_name
 
-        AirflowTask(task_id=test_task_id, operator=test_operator, task=task, task_instance=task_instance)
+        AirflowTask(task_id=test_task_id, operator_name=test_operator_name, task=task, task_instance=task_instance)
     
     def test_airflow_task_mismatch(self):
         test_task_id = 'test_task_id'
-        test_operator = 'test_operator'
+        test_operator_name = 'test_operator'
 
         task = MagicMock()
         task.task_id = test_task_id
 
         task_instance = MagicMock()
         task_instance.task_id = 'different_test_id'
-        task_instance.operator = test_operator
+        task_instance.operator = test_operator_name
 
         with self.assertRaises(AirflowTaskMismatch):
-            AirflowTask(task_id=test_task_id, operator=test_operator, task=task, task_instance=task_instance)
+            AirflowTask(task_id=test_task_id, operator_name=test_operator_name, task=task, task_instance=task_instance)
     
     def test_airflow_dag(self):
         test_dag_id = 'test_dag_id'

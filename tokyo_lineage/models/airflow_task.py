@@ -1,4 +1,5 @@
 import attr
+from typing import Type
 
 from airflow.models import BaseOperator
 from airflow.models.taskinstance import TaskInstance
@@ -13,7 +14,7 @@ class AirflowOperatorMismatch(Exception):
 
 @attr.s
 class AirflowTask(BaseTask):
-    task: BaseOperator = attr.ib(init=True, default=None)
+    task: Type[BaseOperator] = attr.ib(init=True, default=None)
     task_instance: TaskInstance = attr.ib(init=True, default=None)
 
     @task_instance.validator

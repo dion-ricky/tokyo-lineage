@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, Optional, List, Tuple, Dict
 from datetime import datetime
 
 from airflow.operators import BaseOperator
@@ -13,7 +13,7 @@ def get_dagbag():
     from airflow.models.dagbag import DagBag # Prevent circular import
     return DagBag()
 
-def get_dagruns(*filters):
+def get_dagruns(*filters) -> Optional[List[DagRun]]:
     dagruns = None
 
     with create_session() as session:
@@ -22,7 +22,7 @@ def get_dagruns(*filters):
     
     return dagruns
 
-def get_task_instances(*filters):
+def get_task_instances(*filters) -> Optional[List[TaskInstance]]:
     taskinstances = None
 
     with create_session() as session:
@@ -31,21 +31,30 @@ def get_task_instances(*filters):
     
     return taskinstances
 
-def get_task_instances_from_dagrun(dagrun: DagRun, state=None):
+def get_task_instances_from_dagrun(
+    dagrun: DagRun,
+    state=None
+) -> Optional[List[TaskInstance]]:
     with create_session() as session:
         return dagrun.get_task_instances(state, session)
 
-def get_task_instance_from_dagrun(dagrun: DagRun, task_id: str):
+def get_task_instance_from_dagrun(
+    dagrun: DagRun,
+    task_id: str
+) -> Optional[List[TaskInstance]]:
     with create_session() as session:
         return dagrun.get_task_instance(task_id, session)
 
-def get_dag_from_dagbag(dagbag, dag_id: str):
+def get_dag_from_dagbag(dagbag, dag_id: str) -> Optional[AirflowDag]:
     return dagbag.get_dag(dag_id)
 
-def get_task_from_dag(dag: AirflowDag, task_id: str):
+def get_task_from_dag(dag: AirflowDag, task_id: str) -> Type[BaseOperator]:
     return dag.get_task(task_id)
 
-def instantiate_task(task: Type[BaseOperator], execution_date: datetime):
+def instantiate_task(
+    task: Type[BaseOperator],
+    execution_date: datetime
+) -> Tuple[Type[BaseOperator], TaskInstance]:
     task_instance = TaskInstance(task=task, execution_date=execution_date)
     
     task_instance.refresh_from_db()
@@ -53,14 +62,17 @@ def instantiate_task(task: Type[BaseOperator], execution_date: datetime):
 
     return task, task_instance
 
-def instantiate_task_from_ti(task: Type[BaseOperator], task_instance: TaskInstance):
+def instantiate_task_from_ti(
+    task: Type[BaseOperator],
+    task_instance: TaskInstance
+) -> Tuple[Type[BaseOperator], TaskInstance]:
     task_instance.task = task
     task_instance.refresh_from_db()
     task_instance.render_templates()
 
     return task, task_instance
 
-def get_template_context(task_instance: TaskInstance):
+def get_template_context(task_instance: TaskInstance) -> Optional[Dict]:
     with create_session() as session:
         return task_instance.get_template_context(session)
 

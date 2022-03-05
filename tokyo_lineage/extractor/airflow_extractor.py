@@ -51,7 +51,7 @@ class AirflowExtractor(BaseExtractor):
 
         return extractor if extractor is not None else AirflowMetaExtractor(task)
     
-    def handle_jobs_from_dagrun(self, _jobs: List[DagRun]):
+    def handle_jobs_from_dagrun(self, _jobs: List[DagRun]) -> None:
         jobs = []
         dagbag = get_dagbag()
 
@@ -180,7 +180,7 @@ class AirflowExtractor(BaseExtractor):
             )
     
     @staticmethod
-    def _openlineage_job_name_from_task_instance(task_instance):
+    def _openlineage_job_name_from_task_instance(task_instance) -> str:
         return openlineage_job_name(task_instance.dag_id, task_instance.task_id)
 
 class AirflowMetaExtractor(BaseMetadataExtractor):

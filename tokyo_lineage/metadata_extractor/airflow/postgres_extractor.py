@@ -10,8 +10,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 from contextlib import closing
-from typing import Optional, List
+from typing import Optional, List, Type, Any
 from urllib.parse import urlparse
+
+from airflow.models import BaseOperator
 
 from openlineage.airflow.utils import (
     get_normalized_postgres_connection_uri,
@@ -54,7 +56,7 @@ class PostgresExtractor(BaseMetadataExtractor):
         return ['PostgresOperator']
 
     @property
-    def operator(self):
+    def operator(self) -> Type[BaseOperator]:
         return self.task.task
 
     def extract(self) -> TaskMetadata:
@@ -110,10 +112,10 @@ class PostgresExtractor(BaseMetadataExtractor):
             }
         )
 
-    def _get_connection_uri(self):
+    def _get_connection_uri(self) -> str:
         return get_normalized_postgres_connection_uri(self.conn)
 
-    def _get_scheme(self):
+    def _get_scheme(self) -> str:
         return 'postgres'
 
     def _get_database(self) -> str:
@@ -130,7 +132,7 @@ class PostgresExtractor(BaseMetadataExtractor):
             parsed = urlparse(self.conn.get_uri())
             return f'{parsed.hostname}:{parsed.port}'
 
-    def _conn_id(self):
+    def _conn_id(self) -> str:
         return self.operator.postgres_conn_id
 
     def _information_schema_query(self, table_names: str) -> str:
@@ -144,7 +146,7 @@ class PostgresExtractor(BaseMetadataExtractor):
         WHERE table_name IN ({table_names});
         """
 
-    def _get_hook(self):
+    def _get_hook(self) -> Any:
         PostgresHook = safe_import_airflow(
             airflow_1_path="airflow.hooks.postgres_hook.PostgresHook",
             airflow_2_path="airflow.providers.postgres.hooks.postgres.PostgresHook"

@@ -1,12 +1,14 @@
 import json
 import platform
 from getpass import getuser
-from typing import Type, List
+from typing import Type, List, Any
 
 from avro import schema as avro_schema
 from contextlib import closing
 from typing import Optional, List
 from urllib.parse import urlparse
+
+from airflow.models import BaseOperator
 
 from openlineage.airflow.utils import (
     get_normalized_postgres_connection_uri,
@@ -47,7 +49,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         return ["PostgresToAvroOperator"]
     
     @property
-    def operator(self):
+    def operator(self) -> Type[BaseOperator]:
         return self.task.task
 
     def extract(self) -> TaskMetadata:
@@ -146,7 +148,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         
         return avro_schema.parse(json.dumps(avro_schema_json))
 
-    def _filter_avro_field_type(self, field_types):
+    def _filter_avro_field_type(self, field_types) -> str:
         for f in field_types:
             if f.type != 'null':
                 try:
@@ -154,10 +156,10 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                 except:
                     return f.type
 
-    def _get_pg_connection_uri(self):
+    def _get_pg_connection_uri(self) -> str:
         return get_normalized_postgres_connection_uri(self.conn)
 
-    def _get_pg_scheme(self):
+    def _get_pg_scheme(self) -> str:
         return 'postgres'
 
     def _get_database(self) -> str:
@@ -174,7 +176,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             parsed = urlparse(self.conn.get_uri())
             return f'{parsed.hostname}:{parsed.port}'
 
-    def _conn_id(self):
+    def _conn_id(self) -> str:
         return self.operator.postgres_conn_id
 
     def _information_schema_query(self, table_names: str) -> str:
@@ -188,7 +190,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         WHERE table_name IN ({table_names});
         """
 
-    def _get_hook(self):
+    def _get_hook(self) -> Any:
         PostgresHook = safe_import_airflow(
             airflow_1_path="airflow.hooks.postgres_hook.PostgresHook",
             airflow_2_path="airflow.providers.postgres.hooks.postgres.PostgresHook"

@@ -58,7 +58,7 @@ class BaseExtractor(ABC):
         nominal_end_time: str,
         task: Optional[TaskMetadata],
         run_facets: Optional[Dict[str, Type[BaseFacet]]] = None
-    ):
+    ) -> str:
         return _ADAPTER.start_task(
             run_id,
             job_name,

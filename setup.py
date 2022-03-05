@@ -1,10 +1,11 @@
 from distutils.core import setup
+from setuptools import find_namespace_packages
 
-VERSION = '0.1'
+VERSION = '0.1a0'
 
 setup(
     name="tokyo-lineage",
-    packages=["tokyo_lineage"],
+    packages=find_namespace_packages(include=['tokyo_lineage.*']),
     version=VERSION,
     license="MIT",
     description="Tokyo Lineage",
@@ -66,6 +67,9 @@ setup(
         "marshmallow-sqlalchemy==0.23.1",
         "natsort==7.0.1",
         "numpy==1.19.1",
+        "openlineage-airflow==0.5.1",
+        "openlineage-integration-common==0.5.1",
+        "openlineage-python==0.5.1",
         "pandas==1.1.0",
         "pendulum==1.4.4",
         "prison==0.1.3",

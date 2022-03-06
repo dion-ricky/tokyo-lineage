@@ -53,8 +53,11 @@ class OpenLineageAdapter:
         self,
         openlineage_url: Optional[str] = None,
         openlineage_api_key: Optional[str] = None,
+        openlineage_namespace: Optional[str] = None,
         openlineage_client_options: Optional[OpenLineageClientOptions] = None
     ):
+        self.openlineage_namespace = openlineage_namespace
+
         if openlineage_url:
             log.info(f"Sending lineage events to {openlineage_url}")
             if openlineage_api_key:
@@ -68,6 +71,12 @@ class OpenLineageAdapter:
                     openlineage_url,
                     openlineage_client_options
                 )
+
+    @property
+    def dag_namespace(self):
+        if self.openlineage_namespace:
+            return self.openlineage_namespace
+        return _DAG_NAMESPACE or _DAG_DEFAULT_NAMESPACE
 
     def get_or_create_openlineage_client(self) -> OpenLineageClient:
         if not self._client:
@@ -116,10 +125,10 @@ class OpenLineageAdapter:
         event = RunEvent(
             eventType=RunState.START,
             eventTime=event_time,
-            run=self._build_run(
+            run=self._build_run_self(
                 run_id, parent_run_id, job_name, nominal_start_time, nominal_end_time, run_facets
             ),
-            job=self._build_job(
+            job=self._build_job_self(
                 job_name, job_description, code_location, task.job_facets
             ),
             inputs=task.inputs if task else None,
@@ -147,10 +156,10 @@ class OpenLineageAdapter:
         event = RunEvent(
             eventType=RunState.COMPLETE,
             eventTime=end_time,
-            run=self._build_run(
+            run=self._build_run_self(
                 run_id
             ),
-            job=self._build_job(
+            job=self._build_job_self(
                 job_name, job_facets=task.job_facets
             ),
             inputs=task.inputs,
@@ -176,10 +185,10 @@ class OpenLineageAdapter:
         event = RunEvent(
             eventType=RunState.FAIL,
             eventTime=end_time,
-            run=self._build_run(
+            run=self._build_run_self(
                 run_id
             ),
-            job=self._build_job(
+            job=self._build_job_self(
                 job_name
             ),
             inputs=task.inputs,
@@ -214,6 +223,32 @@ class OpenLineageAdapter:
 
         return Run(run_id, facets)
 
+    def _build_run_self(
+        self,
+        run_id: str,
+        parent_run_id: Optional[str] = None,
+        job_name: Optional[str] = None,
+        nominal_start_time: Optional[str] = None,
+        nominal_end_time: Optional[str] = None,
+        custom_facets: Dict[str, Type[BaseFacet]] = None
+    ) -> Run:
+        facets = {}
+        if nominal_start_time:
+            facets.update({
+                "nominalTime": NominalTimeRunFacet(nominal_start_time, nominal_end_time)
+            })
+        if parent_run_id:
+            facets.update({"parentRun": ParentRunFacet.create(
+                parent_run_id,
+                self.dag_namespace,
+                job_name
+            )})
+
+        if custom_facets:
+            facets.update(custom_facets)
+
+        return Run(run_id, facets)
+
     @staticmethod
     def _build_job(
         job_name: str,
@@ -235,3 +270,25 @@ class OpenLineageAdapter:
             facets = {**facets, **job_facets}
 
         return Job(_DAG_NAMESPACE, job_name, facets)
+
+    def _build_job_self(
+        self,
+        job_name: str,
+        job_description: Optional[str] = None,
+        code_location: Optional[str] = None,
+        job_facets: Dict[str, BaseFacet] = None
+    ):
+        facets = {}
+
+        if job_description:
+            facets.update({
+                "documentation": DocumentationJobFacet(job_description)
+            })
+        if code_location:
+            facets.update({
+                "sourceCodeLocation": SourceCodeLocationJobFacet("", code_location)
+            })
+        if job_facets:
+            facets = {**facets, **job_facets}
+
+        return Job(self.dag_namespace, job_name, facets)

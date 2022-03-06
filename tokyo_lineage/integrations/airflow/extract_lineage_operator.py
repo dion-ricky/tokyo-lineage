@@ -30,12 +30,14 @@ class ExtractLineageOperator(BaseOperator):
         logging.info("Start extracting lineage")
 
         logging.info("Scanning Airflow DagRun")
-        # Providing context to dagrun_filters_with_context
-        dagrun_filters_with_context = [f(context) for f in self.dagrun_filters_with_context]
-
         dagrun_filters = self.dagrun_filters
-        for f in dagrun_filters_with_context:
-            dagrun_filters = dagrun_filters + f
+
+        if self.dagrun_filters_with_context:
+            # Providing context to dagrun_filters_with_context
+            dagrun_filters_with_context = [f(context) for f in self.dagrun_filters_with_context]
+
+            for f in dagrun_filters_with_context:
+                dagrun_filters = dagrun_filters + f
 
         dagruns = get_dagruns(dagrun_filters)
 

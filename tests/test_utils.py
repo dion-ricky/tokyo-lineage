@@ -52,6 +52,16 @@ class TestUtils(unittest.TestCase):
 
         if len(dagrun) > 0:
             self.assertIsInstance(dagrun[0], DagRun)
+        
+        input_param = (DagRun.dag_id == 'example_bash_operator',)
+        dagrun = get_dagruns(*input_param)
+
+        print(dagrun)
+
+        self.assertIsInstance(dagrun, list)
+
+        if len(dagrun) > 0:
+            self.assertIsInstance(dagrun[0], DagRun)
 
     def test_get_dagbag(self):
         dagbag = get_dagbag()

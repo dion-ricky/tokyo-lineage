@@ -113,6 +113,8 @@ class AirflowExtractor(BaseExtractor):
             nominal_end_time = DagUtils.get_end_time(
                 task_instance.execution_date,
                 dag.following_schedule(task_instance.execution_date))
+        else:
+            nominal_end_time = DagUtils.to_iso_8601(nominal_end_time)
 
         run_facets = {**task_metadata.run_facets, **get_custom_facets(_task, dagrun.external_trigger)}
 

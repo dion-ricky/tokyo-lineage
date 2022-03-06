@@ -1,6 +1,8 @@
 from typing import Optional, Type, List, Dict
 from abc import ABC, abstractmethod
 
+from airflow.utils.log.logging_mixin import LoggingMixin
+
 from openlineage.airflow.adapter import OpenLineageAdapter
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.facets import BaseFacet
@@ -10,7 +12,7 @@ from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 
 _ADAPTER = OpenLineageAdapter()
 
-class BaseExtractor(ABC):
+class BaseExtractor(ABC, LoggingMixin):
     def __init__(
         self,
         custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None
@@ -59,6 +61,8 @@ class BaseExtractor(ABC):
         task: Optional[TaskMetadata],
         run_facets: Optional[Dict[str, Type[BaseFacet]]] = None
     ) -> str:
+        self.log.info("Emitting task start event for job: {}".format(job_name))
+
         return _ADAPTER.start_task(
             run_id,
             job_name,
@@ -79,6 +83,8 @@ class BaseExtractor(ABC):
         end_time: str,
         task_metadata: TaskMetadata
     ):
+        self.log.info("Emitting task finish event for job: {}".format(job_name))
+
         _ADAPTER.complete_task(
             task_run_id,
             job_name,
@@ -93,6 +99,8 @@ class BaseExtractor(ABC):
         end_time: str,
         task_metadata: TaskMetadata
     ):
+        self.log.info("Emitting task fail event for job: {}".format(job_name))
+
         _ADAPTER.fail_task(
             task_run_id,
             job_name,

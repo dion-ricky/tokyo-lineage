@@ -108,7 +108,7 @@ class BaseExtractor(ABC, LoggingMixin):
     ):
         self.log.info("Emitting task finish event for job: {}".format(job_name))
 
-        _ADAPTER.complete_task(
+        BaseExtractor._ADAPTER.complete_task(
             task_run_id,
             job_name,
             end_time,
@@ -124,7 +124,7 @@ class BaseExtractor(ABC, LoggingMixin):
     ):
         self.log.info("Emitting task fail event for job: {}".format(job_name))
 
-        _ADAPTER.fail_task(
+        BaseExtractor._ADAPTER.fail_task(
             task_run_id,
             job_name,
             end_time,

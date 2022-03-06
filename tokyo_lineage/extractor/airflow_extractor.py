@@ -34,9 +34,10 @@ def openlineage_job_name(dag_id: str, task_id: str) -> str:
 class AirflowExtractor(BaseExtractor):
     def __init__(
         self,
-        custom_metadata_extractor: Optional[List[Type[BaseMetadataExtractor]]] = None
+        custom_metadata_extractor: Optional[List[Type[BaseMetadataExtractor]]] = None,
+        openlineage_conn_id: Optional[str] = None
     ):
-        super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS)
+        super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS, openlineage_conn_id)
         
         if custom_metadata_extractor:
             self.register_custom_metadata_extractors(

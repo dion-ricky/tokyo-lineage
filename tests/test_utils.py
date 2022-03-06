@@ -42,6 +42,17 @@ class TestUtils(unittest.TestCase):
         if len(dagrun) > 0:
             self.assertIsInstance(dagrun[0], DagRun)
     
+    def test_get_dagruns_filter_tuples(self):
+        input_param = (DagRun.dag_id == 'example_bash_operator', DagRun.run_id.like('scheduled__%'))
+        dagrun = get_dagruns(*input_param)
+
+        print(dagrun)
+
+        self.assertIsInstance(dagrun, list)
+
+        if len(dagrun) > 0:
+            self.assertIsInstance(dagrun[0], DagRun)
+
     def test_get_dagbag(self):
         dagbag = get_dagbag()
 

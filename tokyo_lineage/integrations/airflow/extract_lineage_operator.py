@@ -39,7 +39,7 @@ class ExtractLineageOperator(BaseOperator):
             for f in dagrun_filters_with_context:
                 dagrun_filters = dagrun_filters + f
 
-        dagruns = get_dagruns(dagrun_filters)
+        dagruns = get_dagruns(*dagrun_filters)
 
         logging.info("Instantiating extractor")
         extractor = AirflowExtractor(self.custom_metadata_extractors)

@@ -1,3 +1,5 @@
+import random
+import logging
 from typing import Type, Optional, List, Tuple, Dict
 from datetime import datetime
 
@@ -7,7 +9,12 @@ from airflow.utils.db import create_session
 from airflow.models.dagrun import DagRun
 from airflow.models.taskinstance import TaskInstance
 
+from airflow import secrets
+from airflow.models import Connection
+
 from openlineage.airflow.utils import get_location as openlineage_get_location
+
+log = logging.getLogger(__name__)
 
 def get_dagbag():
     from airflow.models.dagbag import DagBag # Prevent circular import
@@ -80,3 +87,15 @@ def get_location(file_path) -> str:
     location = openlineage_get_location(file_path)
 
     return location if location is not None else file_path
+
+def get_connections(conn_id: str) -> List[Connection]:
+    return secrets.get_connections(conn_id=conn_id)
+
+def get_connection(conn_id: str) -> Connection:
+    # Choosing random connection to allow basic load balancing
+    # See https://airflow.apache.org/docs/apache-airflow/1.10.2/concepts.html
+    conn = random.choice(list(get_connections(conn_id)))
+
+    if conn.host:
+        log.info("Using connection to: %s", conn.log_info())
+    return conn

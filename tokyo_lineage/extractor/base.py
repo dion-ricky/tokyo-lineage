@@ -3,24 +3,47 @@ from abc import ABC, abstractmethod
 
 from airflow.utils.log.logging_mixin import LoggingMixin
 
-from openlineage.airflow.adapter import OpenLineageAdapter
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.facets import BaseFacet
 
 from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 
-_ADAPTER = OpenLineageAdapter()
+from tokyo_lineage.adapter import OpenLineageAdapter
+
+from tokyo_lineage.utils.airflow import get_connection
 
 class BaseExtractor(ABC, LoggingMixin):
+    _ADAPTER = OpenLineageAdapter()
+
     def __init__(
         self,
-        custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None
+        custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None,
+        openlineage_conn_id: Optional[str] = None
     ):
         self.metadata_extractors = []
 
         if custom_metadata_extractors:
             self.register_custom_metadata_extractors(custom_metadata_extractors)
+        
+        if openlineage_conn_id:
+            conn = get_connection(openlineage_conn_id)
+
+            try:
+                assert conn.conn_type == 'http'
+
+                openlineage_url = 'http://{host}:{port}'.format(
+                                                            host=conn.host,
+                                                            port=conn.port)
+
+                openlineage_api_key = conn.get_password()
+
+                BaseExtractor._ADAPTER = OpenLineageAdapter(
+                    openlineage_url=openlineage_url,
+                    openlineage_api_key=openlineage_api_key
+                )
+            except Exception as e:
+                self.log.debug(e)
 
     def get_extractor(
         self,
@@ -63,7 +86,7 @@ class BaseExtractor(ABC, LoggingMixin):
     ) -> str:
         self.log.info("Emitting task start event for job: {}".format(job_name))
 
-        return _ADAPTER.start_task(
+        return BaseExtractor._ADAPTER.start_task(
             run_id,
             job_name,
             job_description,

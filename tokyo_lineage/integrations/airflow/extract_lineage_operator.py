@@ -19,12 +19,14 @@ class ExtractLineageOperator(BaseOperator):
         dagrun_filters: Optional[Tuple] = (),
         dagrun_filters_with_context: Optional[List[Callable[[Any], Tuple]]] = None,
         custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None,
+        openlineage_conn_id: Optional[str] = None,
         *args,
         **kwargs):
         super(ExtractLineageOperator, self).__init__(*args, **kwargs)
         self.dagrun_filters = dagrun_filters
         self.dagrun_filters_with_context = dagrun_filters_with_context
         self.custom_metadata_extractors = custom_metadata_extractors
+        self.openlineage_conn_id = openlineage_conn_id
     
     def execute(self, context):
         logging.info("Start extracting lineage")
@@ -42,7 +44,9 @@ class ExtractLineageOperator(BaseOperator):
         dagruns = get_dagruns(*dagrun_filters)
 
         logging.info("Instantiating extractor")
-        extractor = AirflowExtractor(self.custom_metadata_extractors)
+        extractor = AirflowExtractor(
+                        self.custom_metadata_extractors,
+                        self.openlineage_conn_id)
 
         logging.info("Calling JobRun handler")
         extractor.handle_jobs_from_dagrun(dagruns)

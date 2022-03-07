@@ -119,7 +119,7 @@ class AirflowExtractor(BaseExtractor):
 
         run_facets = {**task_metadata.run_facets, **get_custom_facets(_task, dagrun.external_trigger)}
 
-        self.register_task_start(
+        task_run_id = self.register_task_start(
             run_id,
             job_name,
             job_description,
@@ -130,6 +130,12 @@ class AirflowExtractor(BaseExtractor):
             nominal_end_time,
             task_metadata,
             run_facets
+        )
+
+        JobIdMapping.set(
+            job_name,
+            dagrun.run_id,
+            task_run_id
         )
     
     def _register_task_state(self, task: AirflowTask, job: AirflowDag):

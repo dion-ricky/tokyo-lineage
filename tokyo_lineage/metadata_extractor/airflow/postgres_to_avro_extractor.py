@@ -68,9 +68,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             connection_url=self._get_pg_connection_uri()
         )
 
-        database = self.operator.database
-        if not database:
-            database = self._get_database()
+        database = self._get_database()
 
         # (4) Map input / output tables to dataset objects with source set
         # as the current connection. We need to also fetch the schema for the

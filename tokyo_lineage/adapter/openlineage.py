@@ -60,13 +60,13 @@ class OpenLineageAdapter:
 
         if openlineage_url:
             log.info(f"Sending lineage events to {openlineage_url}")
-            if openlineage_api_key:
-                self._client = OpenLineageClient(
-                    openlineage_url,
-                    OpenLineageClientOptions(
-                        api_key=openlineage_api_key
-                    ))
-            elif openlineage_client_options:
+            self._client = OpenLineageClient(
+                openlineage_url,
+                OpenLineageClientOptions(
+                    api_key=openlineage_api_key
+                ))
+
+            if openlineage_client_options:
                 self._client = OpenLineageClient(
                     openlineage_url,
                     openlineage_client_options

@@ -37,10 +37,12 @@ class BaseExtractor(ABC, LoggingMixin):
                                                             port=conn.port)
 
                 openlineage_api_key = conn.get_password()
+                openlineage_namespace = conn.schema
 
                 BaseExtractor._ADAPTER = OpenLineageAdapter(
                     openlineage_url=openlineage_url,
-                    openlineage_api_key=openlineage_api_key
+                    openlineage_api_key=openlineage_api_key,
+                    openlineage_namespace=openlineage_namespace
                 )
             except Exception as e:
                 self.log.debug(e)

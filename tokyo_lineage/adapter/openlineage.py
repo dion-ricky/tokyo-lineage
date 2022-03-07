@@ -67,6 +67,9 @@ class OpenLineageAdapter:
                 ))
 
             if openlineage_client_options:
+                if not openlineage_client_options.api_key and openlineage_api_key:
+                    openlineage_client_options.api_key = openlineage_api_key
+
                 self._client = OpenLineageClient(
                     openlineage_url,
                     openlineage_client_options

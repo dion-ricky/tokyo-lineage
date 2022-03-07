@@ -39,7 +39,7 @@ class ExtractLineageOperator(BaseOperator):
             dagrun_filters_with_context = [f(context) for f in self.dagrun_filters_with_context]
 
             for f in dagrun_filters_with_context:
-                dagrun_filters = dagrun_filters + f
+                dagrun_filters = dagrun_filters + tuple(list(f))
 
         dagruns = get_dagruns(*dagrun_filters)
 

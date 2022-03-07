@@ -132,7 +132,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         fields = [
             Field(
                 name=f.name,
-                type=self._filter_avro_field_type(f.type._schemas)
+                type=self._filter_avro_field_type(f.type)
             ) for f in fields
         ]
 
@@ -146,8 +146,14 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         
         return avro_schema.parse(json.dumps(avro_schema_json))
 
-    def _filter_avro_field_type(self, field_types) -> str:
-        for f in field_types:
+    def _filter_avro_field_type(self, types) -> str:
+        if not hasattr(types, '_schemas'):
+            try:
+                return types.logical_type
+            except:
+                return types.type
+
+        for f in types._schemas:
             if f.type != 'null':
                 try:
                     return f.logical_type

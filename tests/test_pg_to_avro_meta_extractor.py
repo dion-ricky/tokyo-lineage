@@ -89,7 +89,8 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         "namespace": "example.schema",
         "type": "record",
         "fields":[
-            {"name": "user_id", "type": ["string", "null"]},
+            {"name": "user_id", "type": "string"},
+            {"name": "user_name", "type": ["string", "null"]},
             {"name": "product_id","type": ["double","null"]},
             {"name": "product_price","type": ["long","null"]},
             {"name": "product_serial_number","type": ["int","null"]},
@@ -104,6 +105,10 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         fields = [
             Field(
                 name='user_id',
+                type='string'
+            ),
+            Field(
+                name='user_name',
                 type='string'
             ),
             Field(

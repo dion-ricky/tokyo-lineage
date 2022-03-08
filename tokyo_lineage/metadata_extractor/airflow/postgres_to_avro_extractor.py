@@ -112,13 +112,12 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         return 'file'
 
     def _get_fs_connection_uri(self) -> str:
-        return platform.uname().node
+        scheme = self._get_fs_scheme()
+        host = platform.uname().node
+        return f'{scheme}://{host}'
     
     def _get_fs_authority(self) -> str:
-        user = getuser()
-        node = platform.uname().node
-
-        return ':'.join([user, node])
+        return platform.uname().node
     
     def _get_fs_name(self) -> str:
         dag_id = self.operator.dag_id

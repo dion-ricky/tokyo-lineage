@@ -75,7 +75,7 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         user = getpass.getuser()
         node = platform.uname().node
 
-        self.assertEqual(fs_source.scheme, 'files')
+        self.assertEqual(fs_source.scheme, 'file')
         self.assertEqual(fs_source.authority, ':'.join([user, node]))
         self.assertEqual(fs_source.connection_url, node)
     

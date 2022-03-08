@@ -1,8 +1,6 @@
 from typing import Optional, Type, List, Dict
 from abc import ABC, abstractmethod
 
-from airflow.utils.log.logging_mixin import LoggingMixin
-
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.airflow.facets import BaseFacet
 
@@ -10,6 +8,8 @@ from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 
 from tokyo_lineage.adapter import OpenLineageAdapter
+
+from tokyo_lineage.utils.logging_mixin import LoggingMixin
 
 class BaseExtractor(ABC, LoggingMixin):
     _ADAPTER = OpenLineageAdapter()

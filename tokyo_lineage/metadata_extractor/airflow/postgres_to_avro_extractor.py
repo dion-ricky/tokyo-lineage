@@ -109,7 +109,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         )
     
     def _get_fs_scheme(self) -> str:
-        return 'file' # TODO: #14 Consider changing fs scheme to 'filesystem'
+        return 'file'
 
     def _get_fs_connection_uri(self) -> str:
         return platform.uname().node

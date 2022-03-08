@@ -122,8 +122,9 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
     
     def _get_fs_name(self) -> str:
         dag_id = self.operator.dag_id
+        task_id = self.operator.task_id
 
-        return '_'.join([dag_id, 'temp_fs'])
+        return '_'.join([dag_id, task_id])
 
     def _get_avro_fields(self) -> List[Field]:
         schema = self._get_avro_schema()

@@ -27,6 +27,8 @@ from tokyo_lineage.utils.airflow import (
     instantiate_task_from_ti,
     get_location
 )
+from tokyo_lineage.adapter import OpenLineageAdapter
+from tokyo_lineage.utils.airflow import get_connection
 
 def openlineage_job_name(dag_id: str, task_id: str) -> str:
     return f'{dag_id}.{task_id}'
@@ -37,12 +39,33 @@ class AirflowExtractor(BaseExtractor):
         custom_metadata_extractor: Optional[List[Type[BaseMetadataExtractor]]] = None,
         openlineage_conn_id: Optional[str] = None
     ):
-        super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS, openlineage_conn_id)
+        super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS)
         
         if custom_metadata_extractor:
             self.register_custom_metadata_extractors(
                 custom_metadata_extractor
             )
+        
+        if openlineage_conn_id:
+            conn = get_connection(openlineage_conn_id)
+
+            try:
+                assert conn.conn_type == 'http'
+
+                openlineage_url = 'http://{host}:{port}'.format(
+                                                            host=conn.host,
+                                                            port=conn.port)
+
+                openlineage_api_key = conn.get_password()
+                openlineage_namespace = conn.schema
+
+                BaseExtractor._ADAPTER = OpenLineageAdapter(
+                    openlineage_url=openlineage_url,
+                    openlineage_api_key=openlineage_api_key,
+                    openlineage_namespace=openlineage_namespace
+                )
+            except Exception as e:
+                self.log.debug(e)
 
     def get_extractor(
         self,

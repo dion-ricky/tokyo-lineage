@@ -4,8 +4,9 @@ from abc import ABC, abstractmethod, abstractclassmethod
 from openlineage.airflow.extractors.base import TaskMetadata
 
 from tokyo_lineage.models.base import BaseTask
+from tokyo_lineage.utils.logging_mixin import LoggingMixin
 
-class BaseMetadataExtractor(ABC):
+class BaseMetadataExtractor(ABC, LoggingMixin):
     def __init__(self, task: Type[BaseTask]):
         self.task = task
 

@@ -37,7 +37,6 @@ _ORDINAL_POSITION = 3
 _UDT_NAME = 4
 
 
-# TODO: #10 Test PostgresToAvro meta extractor
 class PostgresToAvroExtractor(BaseMetadataExtractor):
     default_schema = 'public'
 

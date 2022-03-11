@@ -5,7 +5,7 @@ from typing import Type, List, Optional
 from airflow.models import BaseOperator
 
 from openlineage.airflow.extractors.base import TaskMetadata
-from openlineage.common.dataset import Source, Dataset, Field
+from openlineage.common.dataset import Source, Dataset
 
 from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor

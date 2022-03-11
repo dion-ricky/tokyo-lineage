@@ -1,2 +1,3 @@
 from tokyo_lineage.metadata_extractor.airflow.postgres_extractor import PostgresExtractor
 from tokyo_lineage.metadata_extractor.airflow.postgres_to_avro_extractor import PostgresToAvroExtractor
+from tokyo_lineage.metadata_extractor.airflow.file_to_gcs_extractor import FileToGcsExtractor

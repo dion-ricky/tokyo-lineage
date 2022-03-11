@@ -14,7 +14,7 @@ from tokyo_lineage.utils.airflow import get_connection
 
 EXPORTER_OPERATOR_CLASSNAMES = ["PostgresToAvroOperator", "PostgresToJsonOperator"]
 
-class LocalFileToGcsExtractor(BaseMetadataExtractor):
+class FileToGcsExtractor(BaseMetadataExtractor):
     def __init__(self, task: Type[BaseTask]):
         super().__init__(task)
 

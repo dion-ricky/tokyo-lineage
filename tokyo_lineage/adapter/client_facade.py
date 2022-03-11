@@ -28,7 +28,7 @@ class OpenLineageClientFacade:
         resp.raise_for_status()
         return resp
     
-    def get(self, path, params):
+    def get(self, path, params = None):
         resp = self.session.get(
             urljoin(self.url, path),
             params,

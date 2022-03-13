@@ -59,7 +59,6 @@ class FileToGcsExtractor(BaseMetadataExtractor):
             outputs=[ds.to_openlineage_dataset() for ds in outputs]
         )
 
-
     def _get_gcs_connection(self):
         conn = get_connection(self.operator.google_cloud_storage_conn_id)
         return conn
@@ -68,8 +67,7 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return 'gs'
     
     def _get_gcs_connection_uri(self) -> str:
-        conn = self._get_gcs_connection()
-        return conn.get_uri()
+        return f'{self._get_gcs_scheme()}://{self.operator.bucket}'
 
     def _get_gcs_authority(self) -> str:
         conn = self._get_gcs_connection()

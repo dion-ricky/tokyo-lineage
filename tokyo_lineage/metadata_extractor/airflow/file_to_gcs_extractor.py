@@ -70,13 +70,7 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return f'{self._get_gcs_scheme()}://{self.operator.bucket}'
 
     def _get_gcs_authority(self) -> str:
-        conn = self._get_gcs_connection()
-
-        if conn.host and conn.port:
-            return f'{conn.host}:{conn.port}'
-        else:
-            parsed = urlparse(conn.get_uri())
-            return f'{parsed.hostname}:{parsed.port}'
+        return f'{self.operator.bucket}'
 
     def _get_fs_scheme(self) -> str:
         return 'file'

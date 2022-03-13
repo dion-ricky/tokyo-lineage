@@ -1,3 +1,3 @@
-from tokyo_lineage.metadata_extractor.airflow import PostgresExtractor, PostgresToAvroExtractor, FileToGcsExtractor
+from tokyo_lineage.metadata_extractor.airflow import PostgresExtractor, PostgresToAvroExtractor, FileToGcsExtractor, GcsToBigQueryExtractor
 
-AIRFLOW_EXTRACTORS = [PostgresExtractor, PostgresToAvroExtractor, FileToGcsExtractor]
+AIRFLOW_EXTRACTORS = [PostgresExtractor, PostgresToAvroExtractor, FileToGcsExtractor, GcsToBigQueryExtractor]

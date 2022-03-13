@@ -1,7 +1,7 @@
 from distutils.core import setup
 from setuptools import find_namespace_packages
 
-VERSION = '0.3a3'
+VERSION = '0.4a0'
 
 setup(
     name="tokyo-lineage",

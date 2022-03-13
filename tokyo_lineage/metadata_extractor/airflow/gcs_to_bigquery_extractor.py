@@ -124,7 +124,8 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         """
 
         bq_hook = BigQueryHook(bigquery_conn_id=self.operator.bigquery_conn_id,
-                                delegate_to=self.operator.delegate_to)
+                                delegate_to=self.operator.delegate_to,
+                                use_legacy_sql=False)
         conn = bq_hook.get_conn()
         cursor = conn.cursor()
 

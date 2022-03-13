@@ -48,7 +48,7 @@ class FileToGcsExtractor(BaseMetadataExtractor):
 
         outputs = [
             Dataset(
-                name=self.operator.bucket,
+                name=self._get_output_dataset_name(),
                 source=output_gcs_source
             )
         ]
@@ -67,12 +67,19 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return 'gs'
     
     def _get_gcs_connection_uri(self) -> str:
-        return f'{self._get_gcs_scheme()}://{self.operator.bucket}'
+        conn = self._get_gcs_connection()
+        extras = json.loads(conn.get_extra())
+        return f"{self._get_gcs_scheme()}://{extras['extra__google_cloud_platform__project']}/{self.operator.bucket}"
 
     def _get_gcs_authority(self) -> str:
         conn = self._get_gcs_connection()
         extras = json.loads(conn.get_extra())
         return f"{extras['extra__google_cloud_platform__project']}"
+
+    def _get_output_dataset_name(self) -> str:
+        bucket = self.operator.bucket
+        task_id = self.operator.task_id
+        return f"{bucket}.{task_id}"
 
     def _get_fs_scheme(self) -> str:
         return 'file'

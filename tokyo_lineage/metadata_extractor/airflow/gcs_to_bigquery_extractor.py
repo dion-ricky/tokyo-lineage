@@ -134,8 +134,8 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
 
         fields = [
             Field(
-                name=f[4],
-                type=f"{f[7]}".lower()
+                name=f[3],
+                type=f"{f[6]}".lower()
             ) for f in _fields
         ]
 

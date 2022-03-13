@@ -23,6 +23,7 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         _task = Mock()
         _task.task_id = task_id
         _task.dag_id = 'test_dag'
+        _task.bucket = 'test_bucket'
         
         ul1 = Mock()
         ul1.__class__.__name__ = 'RandomUselessOperator'
@@ -50,9 +51,7 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         meta_extractor = FileToGcsExtractor(task)
 
         mock_connection = Mock()
-        mock_connection.host = 'test-google-domain.com'
-        mock_connection.port = None
-        mock_connection.get_uri = lambda: 'gs://test-google-domain.com'
+        mock_connection.get_extra = lambda: '{"extra__google_cloud_platform__project": "test_project"}'
         meta_extractor._get_gcs_connection = lambda: mock_connection
 
         self.task = task
@@ -63,10 +62,10 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         self.assertEqual(self.meta_extractor._get_gcs_scheme(), 'gs')
     
     def test_gcs_connection_uri(self):
-        self.assertEqual(self.meta_extractor._get_gcs_connection_uri(), 'gs://test-google-domain.com')
+        self.assertEqual(self.meta_extractor._get_gcs_connection_uri(), 'gs://test_project/test_bucket')
     
     def test_gcs_authority(self):
-        self.assertEqual(self.meta_extractor._get_gcs_authority(), 'test-google-domain.com:None')
+        self.assertEqual(self.meta_extractor._get_gcs_authority(), 'test_project')
     
     def test_get_nearest_exporter(self):
         meta_extractor = self.meta_extractor

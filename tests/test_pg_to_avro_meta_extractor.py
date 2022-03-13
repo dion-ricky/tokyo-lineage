@@ -43,25 +43,24 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
     def test_fs_scheme(self):
         meta_extractor = self.meta_extractor
         
-        self.assertEqual(meta_extractor._get_fs_scheme(), 'files')
+        self.assertEqual(meta_extractor._get_fs_scheme(), 'file')
     
     def test_fs_connection_uri(self):
         meta_extractor = self.meta_extractor
 
-        self.assertEqual(meta_extractor._get_fs_connection_uri(), platform.uname().node)
+        self.assertEqual(meta_extractor._get_fs_connection_uri(), f"file://{platform.uname().node}")
 
     def test_fs_authority(self):
         meta_extractor = self.meta_extractor
 
-        user = getpass.getuser()
         node = platform.uname().node
 
-        self.assertEqual(meta_extractor._get_fs_authority(), ':'.join([user, node]))
+        self.assertEqual(meta_extractor._get_fs_authority(), node)
 
     def test_fs_name(self):
         meta_extractor = self.meta_extractor        
 
-        self.assertEqual(meta_extractor._get_fs_name(), 'test_dag_temp_fs')
+        self.assertEqual(meta_extractor._get_fs_name(), 'test_dag_test_task')
     
     def test_fs_source(self):
         meta_extractor = self.meta_extractor        

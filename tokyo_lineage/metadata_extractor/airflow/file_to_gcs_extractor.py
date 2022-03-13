@@ -1,5 +1,5 @@
+import json
 import platform
-from urllib.parse import urlparse
 from typing import Type, List, Optional
 
 from airflow.models import BaseOperator
@@ -70,7 +70,9 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return f'{self._get_gcs_scheme()}://{self.operator.bucket}'
 
     def _get_gcs_authority(self) -> str:
-        return f'{self.operator.bucket}'
+        conn = self._get_gcs_connection()
+        extras = json.loads(conn.get_extra())
+        return f"{extras['extra__google_cloud_platform__project']}"
 
     def _get_fs_scheme(self) -> str:
         return 'file'

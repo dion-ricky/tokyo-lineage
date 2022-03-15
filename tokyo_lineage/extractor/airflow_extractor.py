@@ -1,3 +1,4 @@
+import time
 from typing import Optional, Type, List
 
 from airflow.models import BaseOperator
@@ -127,10 +128,10 @@ class AirflowExtractor(BaseExtractor):
         run_id = new_lineage_run_id(dagrun.run_id, task.task_id)
         job_name = f'{dag.dag_id}.{task.task_id}'
         job_description = dag.description
-        event_time = DagUtils.get_start_time(task_instance.execution_date)
+        event_time = self._now_ms()
         parent_run_id = dagrun.run_id
         code_location = get_location(dag.full_filepath)
-        nominal_start_time = DagUtils.get_start_time(task_instance.execution_date)
+        nominal_start_time = DagUtils.get_start_time(task_instance.start_date)
         nominal_end_time = task_instance.end_date
 
         if nominal_end_time is None:
@@ -214,6 +215,10 @@ class AirflowExtractor(BaseExtractor):
     @staticmethod
     def _openlineage_job_name_from_task_instance(task_instance) -> str:
         return openlineage_job_name(task_instance.dag_id, task_instance.task_id)
+    
+    @staticmethod
+    def _now_ms():
+        return int(round(time.time() * 1000))
 
 class AirflowMetaExtractor(BaseMetadataExtractor):
     def __init__(self, task):

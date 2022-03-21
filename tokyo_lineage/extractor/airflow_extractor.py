@@ -128,7 +128,7 @@ class AirflowExtractor(BaseExtractor):
         run_id = new_lineage_run_id(dagrun.run_id, task.task_id)
         job_name = f'{dag.dag_id}.{task.task_id}'
         job_description = dag.description
-        event_time = self._now_ms()
+        event_time = DagUtils.get_start_time(task_instance.start_date)
         parent_run_id = dagrun.run_id
         code_location = get_location(dag.full_filepath)
         nominal_start_time = DagUtils.get_start_time(task_instance.start_date)

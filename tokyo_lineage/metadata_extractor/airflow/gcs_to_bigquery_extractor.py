@@ -1,4 +1,3 @@
-import json
 from typing import Type, List, Optional
 
 from airflow.models import BaseOperator
@@ -11,6 +10,16 @@ from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.base import BaseTask
 
 from tokyo_lineage.utils.airflow import get_connection
+from tokyo_lineage.utils.dataset_naming_helper import (
+    # GCS dataset
+    gcs_scheme,
+    gcs_authority,
+    gcs_connection_uri,
+    # BigQuery dataset
+    bq_scheme,
+    bq_authority,
+    bq_connection_uri
+)
 
 UPLOADER_OPERATOR_CLASSNAMES = ["FileToGoogleCloudStorageOperator"]
 
@@ -69,17 +78,15 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return conn
 
     def _get_gcs_scheme(self) -> str:
-        return 'gs'
+        return gcs_scheme()
     
     def _get_gcs_connection_uri(self) -> str:
         conn = self._get_gcs_connection()
-        extras = json.loads(conn.get_extra())
-        return f"{self._get_gcs_scheme()}://{extras['extra__google_cloud_platform__project']}/{self.operator.bucket}"
+        return gcs_connection_uri(conn, self.operator.bucket)
 
     def _get_gcs_authority(self) -> str:
         conn = self._get_gcs_connection()
-        extras = json.loads(conn.get_extra())
-        return f"{extras['extra__google_cloud_platform__project']}"
+        return gcs_authority(conn)
     
     def _get_project_dataset_table(self):
         project_dataset_table = self.operator.destination_project_dataset_table
@@ -94,19 +101,16 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return conn
     
     def _get_bq_scheme(self) -> str:
-        return 'bigquery'
+        return bq_scheme()
     
     def _get_bq_connection_uri(self) -> str:
         _, dataset, _ = self._get_project_dataset_table()
-        scheme = self._get_bq_scheme()
         conn = self._get_gcs_connection()
-        extras = json.loads(conn.get_extra())
-        return f"{scheme}://{extras['extra__google_cloud_platform__project']}/{dataset}"
+        return bq_connection_uri(conn, dataset)
     
     def _get_bq_authority(self) -> str:
         conn = self._get_gcs_connection()
-        extras = json.loads(conn.get_extra())
-        return f"{extras['extra__google_cloud_platform__project']}"
+        return bq_authority(conn)
 
     def _get_output_dataset_name(self) -> str:
         _, dataset, table = self._get_project_dataset_table()

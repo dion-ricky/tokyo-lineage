@@ -34,6 +34,12 @@ from openlineage.common.dataset import Source, Dataset
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.airflow_task import AirflowTask
 
+from tokyo_lineage.utils.dataset_naming_helper import (
+    pg_scheme,
+    pg_authority,
+    pg_connection_uri
+)
+
 _TABLE_SCHEMA = 0
 _TABLE_NAME = 1
 _COLUMN_NAME = 2
@@ -113,10 +119,10 @@ class PostgresExtractor(BaseMetadataExtractor):
         )
 
     def _get_connection_uri(self) -> str:
-        return get_normalized_postgres_connection_uri(self.conn)
+        return pg_connection_uri(self.conn)
 
     def _get_scheme(self) -> str:
-        return 'postgres'
+        return pg_scheme()
 
     def _get_database(self) -> str:
         if self.conn.schema:
@@ -126,11 +132,7 @@ class PostgresExtractor(BaseMetadataExtractor):
             return f'{parsed.path}'
 
     def _get_authority(self) -> str:
-        if self.conn.host and self.conn.port:
-            return f'{self.conn.host}:{self.conn.port}'
-        else:
-            parsed = urlparse(self.conn.get_uri())
-            return f'{parsed.hostname}:{parsed.port}'
+        return pg_authority(self.conn)
 
     def _conn_id(self) -> str:
         return self.operator.postgres_conn_id

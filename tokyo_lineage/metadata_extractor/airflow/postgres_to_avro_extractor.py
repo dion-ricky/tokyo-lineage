@@ -1,6 +1,4 @@
 import json
-import platform
-from getpass import getuser
 from typing import Type, List, Any
 
 from avro import schema as avro_schema
@@ -11,7 +9,6 @@ from urllib.parse import urlparse
 from airflow.models import BaseOperator
 
 from openlineage.airflow.utils import (
-    get_normalized_postgres_connection_uri,
     get_connection, safe_import_airflow
 )
 from openlineage.airflow.extractors.base import TaskMetadata
@@ -27,6 +24,16 @@ from openlineage.common.dataset import Source, Dataset, Field
 
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.airflow_task import AirflowTask
+from tokyo_lineage.utils.dataset_naming_helper import (
+    # Local filesystem dataset
+    fs_scheme,
+    fs_authority,
+    fs_connection_uri,
+    # Postgres dataset
+    pg_scheme,
+    pg_authority,
+    pg_connection_uri
+)
 
 _TABLE_SCHEMA = 0
 _TABLE_NAME = 1
@@ -92,7 +99,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         
         outputs = [
             Dataset(
-                name=self._get_fs_name(),
+                name=self._get_output_dataset_name(),
                 source=filesystem_source,
                 fields=self._get_avro_fields()
             )
@@ -108,17 +115,15 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         )
     
     def _get_fs_scheme(self) -> str:
-        return 'file'
+        return fs_scheme()
 
     def _get_fs_connection_uri(self) -> str:
-        scheme = self._get_fs_scheme()
-        host = platform.uname().node
-        return f'{scheme}://{host}'
+        return fs_connection_uri()
     
     def _get_fs_authority(self) -> str:
-        return platform.uname().node
+        return fs_authority()
     
-    def _get_fs_name(self) -> str:
+    def _get_output_dataset_name(self) -> str:
         dag_id = self.operator.dag_id
         task_id = self.operator.task_id
 
@@ -160,10 +165,10 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                     return f.type
 
     def _get_pg_connection_uri(self) -> str:
-        return get_normalized_postgres_connection_uri(self.conn)
+        return pg_connection_uri(self.conn)
 
     def _get_pg_scheme(self) -> str:
-        return 'postgres'
+        return pg_scheme()
 
     def _get_database(self) -> str:
         if self.conn.schema:
@@ -173,11 +178,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             return f'{parsed.path}'
 
     def _get_pg_authority(self) -> str:
-        if self.conn.host and self.conn.port:
-            return f'{self.conn.host}:{self.conn.port}'
-        else:
-            parsed = urlparse(self.conn.get_uri())
-            return f'{parsed.hostname}:{parsed.port}'
+        return pg_authority(self.conn)
 
     def _conn_id(self) -> str:
         return self.operator.postgres_conn_id

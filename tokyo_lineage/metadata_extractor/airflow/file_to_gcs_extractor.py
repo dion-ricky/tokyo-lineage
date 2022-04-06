@@ -11,8 +11,20 @@ from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 
 from tokyo_lineage.utils.airflow import get_connection
+from tokyo_lineage.utils.dataset_naming_helper import (
+    # Local filesystem dataset
+    fs_scheme,
+    fs_authority,
+    fs_connection_uri,
+    
+    # GCS dataset
+    gcs_scheme,
+    gcs_authority,
+    gcs_connection_uri
+)
 
 EXPORTER_OPERATOR_CLASSNAMES = ["PostgresToAvroOperator", "PostgresToJsonOperator"]
+
 
 class FileToGcsExtractor(BaseMetadataExtractor):
     def __init__(self, task: Type[BaseTask]):
@@ -64,17 +76,15 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return conn
 
     def _get_gcs_scheme(self) -> str:
-        return 'gs'
+        return gcs_scheme()
     
     def _get_gcs_connection_uri(self) -> str:
         conn = self._get_gcs_connection()
-        extras = json.loads(conn.get_extra())
-        return f"{self._get_gcs_scheme()}://{extras['extra__google_cloud_platform__project']}/{self.operator.bucket}"
+        return gcs_connection_uri(conn, self.operator.bucket)
 
     def _get_gcs_authority(self) -> str:
         conn = self._get_gcs_connection()
-        extras = json.loads(conn.get_extra())
-        return f"{extras['extra__google_cloud_platform__project']}"
+        return gcs_authority(conn)
 
     def _get_output_dataset_name(self) -> str:
         bucket = self.operator.bucket
@@ -82,15 +92,13 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return f"{bucket}.{task_id}"
 
     def _get_fs_scheme(self) -> str:
-        return 'file'
+        return fs_scheme()
 
     def _get_fs_connection_uri(self) -> str:
-        scheme = self._get_fs_scheme()
-        host = platform.uname().node
-        return f'{scheme}://{host}'
+        return fs_connection_uri()
 
     def _get_fs_authority(self) -> str:
-        return platform.uname().node
+        return fs_authority()
 
     def _get_input_dataset_name(self) -> str:
         exporter = self._get_nearest_exporter_upstream()

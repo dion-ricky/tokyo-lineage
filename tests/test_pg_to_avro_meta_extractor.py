@@ -60,7 +60,7 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
     def test_fs_name(self):
         meta_extractor = self.meta_extractor        
 
-        self.assertEqual(meta_extractor._get_fs_name(), 'test_dag_test_task')
+        self.assertEqual(meta_extractor._get_output_dataset_name(), 'test_dag_test_task')
     
     def test_fs_source(self):
         meta_extractor = self.meta_extractor        

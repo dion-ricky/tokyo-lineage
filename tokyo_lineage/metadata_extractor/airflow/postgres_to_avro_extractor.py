@@ -118,16 +118,13 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         return fs_scheme()
 
     def _get_fs_connection_uri(self) -> str:
-        return fs_connection_uri()
+        return fs_connection_uri(self.operator.avro_output_path)
     
     def _get_fs_authority(self) -> str:
         return fs_authority()
     
     def _get_output_dataset_name(self) -> str:
-        dag_id = self.operator.dag_id
-        task_id = self.operator.task_id
-
-        return '_'.join([dag_id, task_id])
+        return self.operator.avro_output_path
 
     def _get_avro_fields(self) -> List[Field]:
         schema = self._get_avro_schema()

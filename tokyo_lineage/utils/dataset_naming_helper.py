@@ -4,6 +4,13 @@ from urllib.parse import urlparse
 
 from openlineage.airflow.utils import get_normalized_postgres_connection_uri
 
+""" This helper is created to provide uniform naming conventions
+across several metadata extractor. Also the helper provided here
+comply with OpenLineage naming specification. For more details
+please visit:
+https://github.com/OpenLineage/OpenLineage/blob/main/spec/Naming.md
+"""
+
 
 def fs_scheme() -> str:
     return 'file'
@@ -13,10 +20,10 @@ def fs_authority() -> str:
     return platform.uname().node
 
 
-def fs_connection_uri() -> str:
+def fs_connection_uri(path) -> str:
     scheme = fs_scheme()
     host = platform.uname().node
-    return f'{scheme}://{host}'
+    return f'{scheme}://{host}{path}'
 
 
 def pg_scheme() -> str:
@@ -39,14 +46,12 @@ def gcs_scheme() -> str:
     return 'gs'
 
 
-def gcs_authority(conn) -> str:
-    extras = json.loads(conn.get_extra())
-    return f"{extras['extra__google_cloud_platform__project']}"
+def gcs_authority(bucket) -> str:
+    return f"{bucket}"
 
 
-def gcs_connection_uri(conn, bucket) -> str:
-    extras = json.loads(conn.get_extra())
-    return f"{gcs_scheme()}://{extras['extra__google_cloud_platform__project']}/{bucket}"
+def gcs_connection_uri(bucket, path) -> str:
+    return f"{gcs_scheme()}://{bucket}{path}"
 
 
 def bq_scheme() -> str:
@@ -54,11 +59,10 @@ def bq_scheme() -> str:
 
 
 def bq_authority(conn) -> str:
-    extras = json.loads(conn.get_extra())
-    return f"{extras['extra__google_cloud_platform__project']}"
+    return ""
 
 
-def bq_connection_uri(conn, dataset) -> str:
+def bq_connection_uri(conn, dataset, table) -> str:
     scheme = bq_scheme()
     extras = json.loads(conn.get_extra())
-    return f"{scheme}://{extras['extra__google_cloud_platform__project']}/{dataset}"
+    return f"{scheme}:{extras['extra__google_cloud_platform__project']}.{dataset}.{table}"

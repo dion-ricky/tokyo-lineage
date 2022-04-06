@@ -79,12 +79,10 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return gcs_scheme()
     
     def _get_gcs_connection_uri(self) -> str:
-        conn = self._get_gcs_connection()
-        return gcs_connection_uri(conn, self.operator.bucket)
+        return gcs_connection_uri(self.operator.bucket, self.operator.dst)
 
     def _get_gcs_authority(self) -> str:
-        conn = self._get_gcs_connection()
-        return gcs_authority(conn)
+        return gcs_authority(self.operator.bucket)
 
     def _get_output_dataset_name(self) -> str:
         bucket = self.operator.bucket
@@ -95,7 +93,7 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return fs_scheme()
 
     def _get_fs_connection_uri(self) -> str:
-        return fs_connection_uri()
+        return fs_connection_uri(self.operator.src)
 
     def _get_fs_authority(self) -> str:
         return fs_authority()

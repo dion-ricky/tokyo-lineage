@@ -1,3 +1,4 @@
+import json
 import unittest
 from datetime import datetime
 from unittest.mock import Mock
@@ -17,6 +18,7 @@ class TestGcsToBqExtractor(unittest.TestCase):
         _task.task_id = task_id
         _task.dag_id = 'test_dag'
         _task.bucket = 'test_bucket'
+        _task.dst = '/test/path.avro'
         _task.destination_project_dataset_table = 'p.d.t'
         
         ul1 = Mock()
@@ -62,14 +64,14 @@ class TestGcsToBqExtractor(unittest.TestCase):
     
     def test_gcs_authority(self):
         meta_extractor = self.meta_extractor
-        self.assertEqual(meta_extractor._get_gcs_authority(), 'test_project')
+        self.assertEqual(meta_extractor._get_gcs_authority(), meta_extractor.operator.bucket)
 
     def test_gcs_connection_uri(self):
         meta_extractor = self.meta_extractor
         scheme = meta_extractor._get_gcs_scheme()
-        authority = meta_extractor._get_gcs_authority()
         bucket = meta_extractor.operator.bucket
-        self.assertEqual(meta_extractor._get_gcs_connection_uri(), f"{scheme}://{authority}/{bucket}")
+        path = meta_extractor.operator.dst
+        self.assertEqual(meta_extractor._get_gcs_connection_uri(), f"{scheme}://{bucket}{path}")
     
     def test_get_project_dataset_table(self):
         meta_extractor = self.meta_extractor
@@ -85,14 +87,17 @@ class TestGcsToBqExtractor(unittest.TestCase):
     
     def test_bq_authority(self):
         meta_extractor = self.meta_extractor
-        self.assertEqual(meta_extractor._get_gcs_authority(), 'test_project')
+        self.assertEqual(meta_extractor._get_bq_authority(), '')
     
     def test_bq_connection_uri(self):
         meta_extractor = self.meta_extractor
         scheme = meta_extractor._get_bq_scheme()
-        _, dataset, _ = meta_extractor._get_project_dataset_table()
-        authority = meta_extractor._get_bq_authority()
-        self.assertEqual(meta_extractor._get_bq_connection_uri(), f"{scheme}://{authority}/{dataset}")
+        _, dataset, table = meta_extractor._get_project_dataset_table()
+
+        conn = meta_extractor._get_bq_connection()
+        extras = json.loads(conn.get_extra())
+        project_id = extras['extra__google_cloud_platform__project']
+        self.assertEqual(meta_extractor._get_bq_connection_uri(), f"{scheme}:{project_id}.{dataset}.{table}")
     
     def test_output_dataset_name(self):
         meta_extractor = self.meta_extractor

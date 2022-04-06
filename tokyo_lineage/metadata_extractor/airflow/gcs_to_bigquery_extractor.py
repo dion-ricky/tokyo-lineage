@@ -81,12 +81,10 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return gcs_scheme()
     
     def _get_gcs_connection_uri(self) -> str:
-        conn = self._get_gcs_connection()
-        return gcs_connection_uri(conn, self.operator.bucket)
+        return gcs_connection_uri(self.operator.bucket, self.operator.dst)
 
     def _get_gcs_authority(self) -> str:
-        conn = self._get_gcs_connection()
-        return gcs_authority(conn)
+        return gcs_authority(self.operator.bucket)
     
     def _get_project_dataset_table(self):
         project_dataset_table = self.operator.destination_project_dataset_table
@@ -104,9 +102,9 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return bq_scheme()
     
     def _get_bq_connection_uri(self) -> str:
-        _, dataset, _ = self._get_project_dataset_table()
+        _, dataset, table = self._get_project_dataset_table()
         conn = self._get_gcs_connection()
-        return bq_connection_uri(conn, dataset)
+        return bq_connection_uri(conn, dataset, table)
     
     def _get_bq_authority(self) -> str:
         conn = self._get_gcs_connection()

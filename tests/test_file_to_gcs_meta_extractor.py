@@ -24,6 +24,8 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         _task.task_id = task_id
         _task.dag_id = 'test_dag'
         _task.bucket = 'test_bucket'
+        _task.src = '/test/source/path.avro'
+        _task.dst = '/test/dest/path.avro'
         
         ul1 = Mock()
         ul1.__class__.__name__ = 'RandomUselessOperator'
@@ -62,10 +64,13 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         self.assertEqual(self.meta_extractor._get_gcs_scheme(), 'gs')
     
     def test_gcs_connection_uri(self):
-        self.assertEqual(self.meta_extractor._get_gcs_connection_uri(), 'gs://test_project/test_bucket')
+        bucket = self.meta_extractor.operator.bucket
+        path = self.meta_extractor.operator.dst
+        self.assertEqual(self.meta_extractor._get_gcs_connection_uri(), f'gs://{bucket}{path}')
     
     def test_gcs_authority(self):
-        self.assertEqual(self.meta_extractor._get_gcs_authority(), 'test_project')
+        bucket = self.meta_extractor.operator.bucket
+        self.assertEqual(self.meta_extractor._get_gcs_authority(), bucket)
     
     def test_get_nearest_exporter(self):
         meta_extractor = self.meta_extractor

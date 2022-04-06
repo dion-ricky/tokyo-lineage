@@ -22,6 +22,7 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         _task = Mock()
         _task.task_id = task_id
         _task.dag_id = 'test_dag'
+        _task.avro_output_path = '/test/path.avro'
 
         task_instance = Mock()
         task_instance.state = State.SUCCESS
@@ -48,7 +49,11 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
     def test_fs_connection_uri(self):
         meta_extractor = self.meta_extractor
 
-        self.assertEqual(meta_extractor._get_fs_connection_uri(), f"file://{platform.uname().node}")
+        scheme = meta_extractor._get_fs_scheme()
+        node = platform.uname().node
+        path = meta_extractor.operator.avro_output_path
+
+        self.assertEqual(meta_extractor._get_fs_connection_uri(), f"{scheme}://{node}{path}")
 
     def test_fs_authority(self):
         meta_extractor = self.meta_extractor
@@ -60,7 +65,7 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
     def test_fs_name(self):
         meta_extractor = self.meta_extractor        
 
-        self.assertEqual(meta_extractor._get_output_dataset_name(), 'test_dag_test_task')
+        self.assertEqual(meta_extractor._get_output_dataset_name(), '/test/path.avro')
     
     def test_fs_source(self):
         meta_extractor = self.meta_extractor        
@@ -73,10 +78,11 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
 
         scheme = meta_extractor._get_fs_scheme()
         node = platform.uname().node
+        path = meta_extractor.operator.avro_output_path
 
         self.assertEqual(fs_source.scheme, 'file')
         self.assertEqual(fs_source.authority, node)
-        self.assertEqual(fs_source.connection_url, f'{scheme}://{node}')
+        self.assertEqual(fs_source.connection_url, f'{scheme}://{node}{path}')
     
     def test_avro_fields_extract(self):
         meta_extractor = self.meta_extractor        

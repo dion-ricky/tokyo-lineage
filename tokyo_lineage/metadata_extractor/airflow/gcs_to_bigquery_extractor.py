@@ -36,19 +36,18 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return self.task.task
     
     def extract(self) -> Optional[TaskMetadata]:
-        # input_source generated from google_cloud_storage_conn_id
-        input_source = Source(
-            scheme=self._get_gcs_scheme(),
-            authority=self._get_gcs_authority(),
-            connection_url=self._get_gcs_connection_uri()
-        )
 
         # input_dataset_name is bucket name
         inputs = [
             Dataset(
                 name=self._get_input_dataset_name(),
-                source=input_source
-            )
+                source=Source(
+                    scheme=self._get_gcs_scheme(),
+                    authority=self._get_gcs_authority(),
+                    connection_url=gcs_connection_uri(self.operator.bucket,
+                                                        source_object)
+                )
+            ) for source_object in self.operator.source_objects
         ]
 
         # output_source generated from bigquery_conn_id
@@ -80,9 +79,6 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
     def _get_gcs_scheme(self) -> str:
         return gcs_scheme()
     
-    def _get_gcs_connection_uri(self) -> str:
-        return gcs_connection_uri(self.operator.bucket, self.operator.dst)
-
     def _get_gcs_authority(self) -> str:
         return gcs_authority(self.operator.bucket)
     

@@ -18,7 +18,7 @@ class TestGcsToBqExtractor(unittest.TestCase):
         _task.task_id = task_id
         _task.dag_id = 'test_dag'
         _task.bucket = 'test_bucket'
-        _task.dst = '/test/path.avro'
+        _task.source_objects = ['/test/path.avro']
         _task.destination_project_dataset_table = 'p.d.t'
         
         ul1 = Mock()
@@ -65,13 +65,6 @@ class TestGcsToBqExtractor(unittest.TestCase):
     def test_gcs_authority(self):
         meta_extractor = self.meta_extractor
         self.assertEqual(meta_extractor._get_gcs_authority(), meta_extractor.operator.bucket)
-
-    def test_gcs_connection_uri(self):
-        meta_extractor = self.meta_extractor
-        scheme = meta_extractor._get_gcs_scheme()
-        bucket = meta_extractor.operator.bucket
-        path = meta_extractor.operator.dst
-        self.assertEqual(meta_extractor._get_gcs_connection_uri(), f"{scheme}://{bucket}{path}")
     
     def test_get_project_dataset_table(self):
         meta_extractor = self.meta_extractor

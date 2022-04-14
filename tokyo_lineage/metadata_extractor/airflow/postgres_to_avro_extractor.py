@@ -1,3 +1,4 @@
+import imp
 import json
 from typing import Type, List, Any
 
@@ -22,6 +23,7 @@ from openlineage.common.models import (
 from openlineage.common.sql import SqlMeta, SqlParser
 from openlineage.common.dataset import Source, Dataset, Field
 
+from tokyo_lineage.facets.annotation import Annotation
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.utils.dataset_naming_helper import (
@@ -90,6 +92,14 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                 sql_meta.in_tables
             )
         ]
+
+        # Extracting annotation from source
+        if hasattr(self.operator, 'tokyolineage_params'):
+            try:
+                if self.operator.tokyolineage_params['is_annotation_available']:
+                    self._extract_annotation(inputs)
+            except KeyError as e:
+                pass
 
         filesystem_source = Source(
             scheme=self._get_fs_scheme(),
@@ -246,3 +256,48 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                         )
 
         return list(schemas_by_table.values())
+
+    def _extract_annotations(
+        self,
+        datasets: List[Dataset]
+    ) -> List[Dataset]:
+        for dataset in datasets:
+            _, _, table = dataset.name.split('.')
+            annotation: dict = json.loads(self._get_table_comment(table))
+
+            annotation_facet = Annotation()
+            
+            # Row annotation
+            annotation_facet.row_annotation = annotation['rows'] \
+                if 'rows' in annotation else None
+            
+            # Columns annotation
+            annotation_facet.column_annotation = annotation['columns'] \
+                if 'columns' in annotation else None
+            
+            # Dataset annotation
+            dataset_annotation = annotation.copy()
+            dataset_annotation.pop('rows', None)
+            dataset_annotation.pop('columns', None)
+            annotation_facet.dataset_annotation = dataset_annotation
+            
+            dataset.custom_facets.update(annotation_facet)
+        
+        return datasets
+
+    def _table_comment_query(self, table_name: str) -> str:
+        return f"""
+        SELECT obj_description('{table_name}'::regclass);
+        """
+
+    def _get_table_comment(self, table_name: str) -> str:
+        hook = self._get_pg_hook()
+        
+        with closing(hook.get_conn()) as conn:
+            with closing(conn.cursor()) as cursor:
+                cursor.execute(
+                    self._table_comment_query(table_name)
+                )
+                row = cursor.fetchone()
+
+                return row[0]

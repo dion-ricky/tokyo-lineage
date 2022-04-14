@@ -16,7 +16,7 @@ from openlineage.airflow.utils import (
 
 from tokyo_lineage.extractor.base import BaseExtractor
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
-from tokyo_lineage.metadata_extractor.airflow.airflow_default import AIRFLOW_EXTRACTORS
+from tokyo_lineage.metadata_extractor.airflow.airflow_default import AIRFLOW_METADATA_EXTRACTORS
 from tokyo_lineage.models.base import BaseJob, BaseTask
 from tokyo_lineage.models.airflow_task import AirflowTask
 from tokyo_lineage.models.airflow_dag import AirflowDag
@@ -34,17 +34,18 @@ from tokyo_lineage.utils.airflow import get_connection
 def openlineage_job_name(dag_id: str, task_id: str) -> str:
     return f'{dag_id}.{task_id}'
 
+
 class AirflowExtractor(BaseExtractor):
     def __init__(
         self,
-        custom_metadata_extractor: Optional[List[Type[BaseMetadataExtractor]]] = None,
+        custom_metadata_extractors: Optional[List[Type[BaseMetadataExtractor]]] = None,
         openlineage_conn_id: Optional[str] = None
     ):
-        super(AirflowExtractor, self).__init__(AIRFLOW_EXTRACTORS)
+        super(AirflowExtractor, self).__init__(AIRFLOW_METADATA_EXTRACTORS)
         
-        if custom_metadata_extractor:
+        if custom_metadata_extractors:
             self.register_custom_metadata_extractors(
-                custom_metadata_extractor
+                custom_metadata_extractors
             )
         
         if openlineage_conn_id:
@@ -53,9 +54,8 @@ class AirflowExtractor(BaseExtractor):
             try:
                 assert conn.conn_type == 'http'
 
-                openlineage_url = 'http://{host}:{port}'.format(
-                                                            host=conn.host,
-                                                            port=conn.port)
+                openlineage_url = 'http://{host}:{port}' \
+                                    .format(host=conn.host, port=conn.port)
 
                 openlineage_api_key = conn.get_password()
                 openlineage_namespace = conn.schema
@@ -68,14 +68,14 @@ class AirflowExtractor(BaseExtractor):
             except Exception as e:
                 self.log.debug(e)
 
-    def get_extractor(
+    def get_metadata_extractor(
         self,
         task: Type[BaseTask]
     ) -> Type[BaseMetadataExtractor]:
-        extractor = super().get_extractor(task)
+        extractor = super().get_metadata_extractor(task)
 
         return extractor if extractor is not None else AirflowMetaExtractor(task)
-    
+
     def handle_jobs_from_dagrun(self, jobs: List[DagRun]) -> None:
         _jobs = []
         dagbag = get_dagbag()
@@ -97,7 +97,7 @@ class AirflowExtractor(BaseExtractor):
             _task, _ = instantiate_task_from_ti(_task, task_instance)
 
             self._handle_task_run(_task, task_instance, job)
-    
+
     def _handle_task_run(
         self,
         task: Type[BaseOperator],
@@ -115,14 +115,14 @@ class AirflowExtractor(BaseExtractor):
 
         # Register finish_task or fail_task
         self._register_task_state(task, job)
-    
+
     def _register_task_start(self, task: AirflowTask, job: AirflowDag):
         _task = task.task
         task_instance = task.task_instance
         dag = job.dag
         dagrun = job.dagrun
 
-        meta_extractor = self.get_extractor(task)
+        meta_extractor = self.get_metadata_extractor(task)
         task_metadata = meta_extractor.extract()
 
         run_id = new_lineage_run_id(dagrun.run_id, task.task_id)
@@ -161,14 +161,14 @@ class AirflowExtractor(BaseExtractor):
             dagrun.run_id,
             task_run_id
         )
-    
+
     def _register_task_state(self, task: AirflowTask, job: AirflowDag):
         _task = task.task
         task_instance = task.task_instance
         dag = job.dag
         dagrun = job.dagrun
         
-        meta_extractor = self.get_extractor(task)
+        meta_extractor = self.get_metadata_extractor(task)
 
         with create_session() as session:
             task_run_id = JobIdMapping.pop(
@@ -211,11 +211,11 @@ class AirflowExtractor(BaseExtractor):
                 end_date,
                 task_metadata
             )
-    
+
     @staticmethod
     def _openlineage_job_name_from_task_instance(task_instance) -> str:
         return openlineage_job_name(task_instance.dag_id, task_instance.task_id)
-    
+
     @staticmethod
     def _now_ms():
         return int(round(time.time() * 1000))

@@ -23,7 +23,7 @@ class BaseExtractor(ABC, LoggingMixin):
         if custom_metadata_extractors:
             self.register_custom_metadata_extractors(custom_metadata_extractors)
 
-    def get_extractor(
+    def get_metadata_extractor(
         self,
         task: Type[BaseTask]
     ) -> Type[BaseMetadataExtractor]:
@@ -109,5 +109,8 @@ class BaseExtractor(ABC, LoggingMixin):
             task_metadata
         )
 
-    def register_custom_metadata_extractors(self, metadata_extractors: List[Type[BaseMetadataExtractor]]):
+    def register_custom_metadata_extractors(
+        self,
+        metadata_extractors: List[Type[BaseMetadataExtractor]]
+    ):
         self.metadata_extractors += metadata_extractors

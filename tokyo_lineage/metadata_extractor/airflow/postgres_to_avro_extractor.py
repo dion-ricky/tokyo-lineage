@@ -97,7 +97,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         if hasattr(self.operator, 'tokyolineage_params'):
             try:
                 if self.operator.tokyolineage_params['is_annotation_available']:
-                    self._extract_annotation(inputs)
+                    self._extract_annotations(inputs)
             except KeyError as e:
                 pass
 
@@ -261,9 +261,14 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         self,
         datasets: List[Dataset]
     ) -> List[Dataset]:
+        self.log.info("Extracting annotation from postgres")
         for dataset in datasets:
             _, _, table = dataset.name.split('.')
+            self.log.info("Getting table comment for table {}".format(table))
             annotation: dict = json.loads(self._get_table_comment(table))
+
+            self.log.info("Table {} has this annotation: ".format(table))
+            self.log.info(json.dumps(annotation))
 
             annotation_facet = Annotation()
             

@@ -10,7 +10,7 @@ from openlineage.common.dataset import Source, Dataset
 from tokyo_lineage.models.base import BaseTask
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 
-from tokyo_lineage.utils.airflow import get_connection
+from tokyo_lineage.utils.airflow import get_connection, instantiate_task
 from tokyo_lineage.utils.dataset_naming_helper import (
     # Local filesystem dataset
     fs_scheme,
@@ -100,7 +100,14 @@ class FileToGcsExtractor(BaseMetadataExtractor):
 
     def _get_input_dataset_name(self) -> str:
         exporter = self._get_nearest_exporter_upstream()
-        return '_'.join([exporter.dag_id, exporter.task_id])
+        execution_date = self.task.task_instance.execution_date
+
+        exporter, _ = self._instantiate_task(exporter, execution_date)
+
+        if hasattr(exporter, 'avro_output_path'):
+            return exporter.avro_output_path
+        elif hasattr(exporter, 'json_output_path'):
+            return exporter.json_output_path
 
     def _get_nearest_exporter_upstream(self) -> Type[BaseOperator]:
         operator = self.operator
@@ -110,3 +117,6 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         for operator in upstream_operators:
             if operator.__class__.__name__ in EXPORTER_OPERATOR_CLASSNAMES:
                 return operator
+    
+    def _instantiate_task(self, task, execution_date):
+        return instantiate_task(task, execution_date)

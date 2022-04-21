@@ -36,6 +36,7 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         ul2.__class__.__name__ = 'PostgresToAvroOperator'
         ul2.dag_id = 'test_dag'
         ul2.task_id = 'test_export_to_avro'
+        ul2.avro_output_path = '/test/test_export.avro'
 
         _task.upstream_list = [ul1, ul2]
 
@@ -80,4 +81,5 @@ class TestFileToGcsMetaExtractor(unittest.TestCase):
         self.assertTrue(exporter.__class__.__name__ in EXPORTER_OPERATOR_CLASSNAMES)
     
     def test_get_input_dataset_name(self):
-        self.assertEqual(self.meta_extractor._get_input_dataset_name(), 'test_dag_test_export_to_avro')
+        self.meta_extractor._instantiate_task = lambda x, y: (x, None)
+        self.assertEqual(self.meta_extractor._get_input_dataset_name(), '/test/test_export.avro')

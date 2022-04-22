@@ -94,15 +94,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         ]
 
         # Extracting annotation from source
-        self.log.info("Extracting annotation from source input")
-        if hasattr(self.operator, 'tokyolineage_params'):
-            self.log.info("Task has tokyolineage_params")
-            try:
-                if self.operator.tokyolineage_params['is_annotation_available']:
-                    self.log.info("Annotation is available, trying to extract")
-                    self._extract_annotations(inputs)
-            except KeyError as e:
-                self.log.error(e)
+        self._extract_annotations(inputs)
 
         filesystem_source = Source(
             scheme=self._get_fs_scheme(),
@@ -268,7 +260,13 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         for dataset in datasets:
             _, _, table = dataset.name.split('.')
             self.log.info("Getting table comment for table {}".format(table))
-            annotation: dict = json.loads(self._get_table_comment(table))
+            raw_annotation = self._get_table_comment(table)
+
+            # If the dataset don't have annotation, do nothing
+            if raw_annotation is None:
+                continue
+
+            annotation: dict = json.loads(raw_annotation)
 
             self.log.info("Table {} has this annotation: ".format(table))
             self.log.info(json.dumps(annotation))
@@ -307,5 +305,8 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                     self._table_comment_query(table_name)
                 )
                 row = cursor.fetchone()
-
-                return row[0]
+                
+                if row is not None:
+                    return row[0]
+        
+        return None

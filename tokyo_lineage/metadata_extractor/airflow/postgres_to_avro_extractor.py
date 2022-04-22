@@ -287,7 +287,9 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             dataset_annotation.pop('columns', None)
             annotation_facet.dataset_annotation = dataset_annotation
             
-            dataset.custom_facets.update(annotation_facet)
+            dataset.custom_facets.update({
+                "annotation": annotation_facet
+            })
         
         return datasets
 
@@ -297,7 +299,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         """
 
     def _get_table_comment(self, table_name: str) -> str:
-        hook = self._get_pg_hook()
+        hook = self._get_hook()
         
         with closing(hook.get_conn()) as conn:
             with closing(conn.cursor()) as cursor:

@@ -1,0 +1,2 @@
+# Tokyo Lineage
+This is a prototype of lineage extraction library. I built this system to enable lineage extraction using ETL tools and Marquez. On this library, I provide an integration with Airflow. For other ETL tools, you can develop the integrations on your own and please kindly contribute to this library by sharing the integration code.

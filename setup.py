@@ -5,7 +5,7 @@ VERSION = '0.5a9'
 
 setup(
     name="tokyo-lineage",
-    packages=find_namespace_packages(include=['tokyo_lineage.*']),
+    packages=find_namespace_packages('tokyo_lineage', include=['tokyo_lineage.*']),
     version=VERSION,
     license="MIT",
     description="Tokyo Lineage",
@@ -137,7 +137,7 @@ setup(
         "zope.deprecation==4.4.0"
     ],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
         'Topic :: Software Development :: Build Tools',
         'License :: OSI Approved :: MIT License',

@@ -16,7 +16,6 @@ from urllib.parse import urlparse
 from airflow.models import BaseOperator
 
 from openlineage.airflow.utils import (
-    get_normalized_postgres_connection_uri,
     get_connection, safe_import_airflow
 )
 from openlineage.airflow.extractors.base import (
@@ -49,7 +48,6 @@ _ORDINAL_POSITION = 3
 _UDT_NAME = 4
 
 
-# TODO: #9 Test Postgres meta extractor
 class PostgresExtractor(BaseMetadataExtractor):
     default_schema = 'public'
 

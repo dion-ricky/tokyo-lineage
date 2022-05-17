@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib.parse import urljoin
 
 from openlineage.client import OpenLineageClient

@@ -86,7 +86,7 @@ class FileToGcsExtractor(BaseMetadataExtractor):
     def _get_output_dataset_name(self) -> str:
         dataset_name = self.operator.dst
         # make sure path starts from root
-        posixpath.join("/", dataset_name)
+        dataset_name = posixpath.join("/", dataset_name)
         return dataset_name
 
     def _get_fs_scheme(self) -> str:

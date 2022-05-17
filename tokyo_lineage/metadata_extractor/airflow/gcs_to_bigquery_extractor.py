@@ -1,3 +1,4 @@
+import posixpath
 from typing import Type, List, Optional
 
 from airflow.models import BaseOperator
@@ -141,8 +142,10 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
 
     def _get_input_dataset_name(self) -> str:
         uploader = self._get_nearest_uploader_upstream()
-        bucket = self.operator.bucket
-        return f"{bucket}.{uploader.task_id}"
+        dataset_name = uploader.dst
+        # make sure path starts from root
+        dataset_name = posixpath.join("/", dataset_name)
+        return dataset_name
 
     def _get_nearest_uploader_upstream(self) -> Type[BaseOperator]:
         operator = self.operator

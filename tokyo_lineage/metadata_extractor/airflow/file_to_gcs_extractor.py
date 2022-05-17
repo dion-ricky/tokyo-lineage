@@ -1,5 +1,4 @@
-import json
-import platform
+import posixpath
 from typing import Type, List, Optional
 
 from airflow.models import BaseOperator
@@ -23,7 +22,7 @@ from tokyo_lineage.utils.dataset_naming_helper import (
     gcs_connection_uri
 )
 
-EXPORTER_OPERATOR_CLASSNAMES = ["PostgresToAvroOperator", "PostgresToJsonOperator"]
+EXPORTER_OPERATOR_CLASSNAMES = ["PostgresToAvroOperator", "PostgresToJsonOperator", "MongoToAvroOperator", "MySqlToAvroOperator"]
 
 
 class FileToGcsExtractor(BaseMetadataExtractor):
@@ -85,9 +84,10 @@ class FileToGcsExtractor(BaseMetadataExtractor):
         return gcs_authority(self.operator.bucket)
 
     def _get_output_dataset_name(self) -> str:
-        bucket = self.operator.bucket
-        task_id = self.operator.task_id
-        return f"{bucket}.{task_id}"
+        dataset_name = self.operator.dst
+        # make sure path starts from root
+        posixpath.join("/", dataset_name)
+        return dataset_name
 
     def _get_fs_scheme(self) -> str:
         return fs_scheme()

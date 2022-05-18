@@ -2,7 +2,10 @@ import json
 import platform
 from urllib.parse import urlparse
 
-from openlineage.airflow.utils import get_normalized_postgres_connection_uri
+from openlineage.airflow.utils import (
+    get_connection_uri,
+    get_normalized_postgres_connection_uri
+)
 
 """ This helper is created to provide uniform naming conventions
 across several metadata extractor. Also the helper provided here
@@ -40,6 +43,22 @@ def pg_authority(conn) -> str:
 
 def pg_connection_uri(conn) -> str:
     return get_normalized_postgres_connection_uri(conn)
+
+
+def mysql_scheme() -> str:
+    return 'mysql'
+
+
+def mysql_authority(conn) -> str:
+    if conn.host and conn.port:
+        return f'{conn.host}:{conn.port}'
+    else:
+        parsed = urlparse(conn.get_uri())
+        return f'{parsed.host}:{parsed.port}'
+
+
+def mysql_connection_uri(conn) -> str:
+    return get_connection_uri(conn)
 
 
 def gcs_scheme() -> str:

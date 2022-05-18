@@ -1,8 +1,9 @@
 import posixpath
-from typing import Type, List, Optional
+from typing import Type, List, Optional, Tuple
 
 from airflow.models import BaseOperator
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
+from airflow.models.taskinstance import TaskInstance
 
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.common.dataset import Source, Dataset, Field
@@ -10,7 +11,7 @@ from openlineage.common.dataset import Source, Dataset, Field
 from tokyo_lineage.metadata_extractor.base import BaseMetadataExtractor
 from tokyo_lineage.models.base import BaseTask
 
-from tokyo_lineage.utils.airflow import get_connection
+from tokyo_lineage.utils.airflow import get_connection, instantiate_task
 from tokyo_lineage.utils.dataset_naming_helper import (
     # GCS dataset
     gcs_scheme,
@@ -142,9 +143,13 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
 
     def _get_input_dataset_name(self) -> str:
         uploader = self._get_nearest_uploader_upstream()
-        dataset_name = uploader.dst
+        execution_date = self.task.task_instance.execution_date
+
+        uploader, _ = instantiate_task(uploader, execution_date)
+
         # make sure path starts from root
-        dataset_name = posixpath.join("/", dataset_name)
+        dataset_name = posixpath.join("/", uploader.dst)
+
         return dataset_name
 
     def _get_nearest_uploader_upstream(self) -> Type[BaseOperator]:

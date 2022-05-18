@@ -1,6 +1,9 @@
 name: Publish tokyo-lineage to PyPI and TestPyPI
 
-on: push
+on:
+  push:
+    branches:
+      - release
 
 jobs:
   build-publish:

@@ -1,5 +1,4 @@
 import json
-import getpass
 import platform
 import unittest
 from datetime import datetime

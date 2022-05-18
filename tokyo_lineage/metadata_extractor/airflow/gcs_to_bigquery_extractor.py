@@ -1,9 +1,8 @@
 import posixpath
-from typing import Type, List, Optional, Tuple
+from typing import Type, List, Optional
 
 from airflow.models import BaseOperator
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook
-from airflow.models.taskinstance import TaskInstance
 
 from openlineage.airflow.extractors.base import TaskMetadata
 from openlineage.common.dataset import Source, Dataset, Field

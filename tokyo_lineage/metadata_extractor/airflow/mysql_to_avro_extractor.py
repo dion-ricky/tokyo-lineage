@@ -303,7 +303,7 @@ class MySqlToAvroExtractor(BaseMetadataExtractor):
                 )
                 row = cursor.fetchone()
 
-                if row is not None:
+                if row[0] is not '':
                     return row[0]
 
         return None

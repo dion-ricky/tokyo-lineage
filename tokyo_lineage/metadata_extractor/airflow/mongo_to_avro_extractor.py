@@ -195,7 +195,7 @@ class MongoToAvroExtractor(BaseMetadataExtractor):
     def _get_table_comment(self, table_name: str) -> str:
         mongo_con = self._get_hook()
         annotation_coll = mongo_con.get_collection(
-                                mongo_collection='annotation',
+                                mongo_collection='annotations',
                                 mongo_db=self.operator.database)
         result = annotation_coll.find(self._table_comment_query(table_name))
         docs = [doc for doc in result]

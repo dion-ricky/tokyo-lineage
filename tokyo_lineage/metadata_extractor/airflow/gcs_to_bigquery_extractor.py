@@ -100,11 +100,11 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
     
     def _get_bq_connection_uri(self) -> str:
         _, dataset, table = self._get_project_dataset_table()
-        conn = self._get_gcs_connection()
+        conn = self._get_bq_connection()
         return bq_connection_uri(conn, dataset, table)
     
     def _get_bq_authority(self) -> str:
-        conn = self._get_gcs_connection()
+        conn = self._get_bq_connection()
         return bq_authority(conn)
 
     def _get_output_dataset_name(self) -> str:

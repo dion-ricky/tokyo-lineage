@@ -1,3 +1,4 @@
+import json
 import posixpath
 from typing import Type, List, Optional
 
@@ -108,8 +109,14 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return bq_authority(conn)
 
     def _get_output_dataset_name(self) -> str:
-        _, dataset, table = self._get_project_dataset_table()
-        return f"{dataset}.{table}"
+        project, dataset, table = self._get_project_dataset_table()
+        
+        if project is None:
+            conn = self._get_bq_connection()
+            extras = json.loads(conn.get_extra())
+            project = extras['extra__google_cloud_platform__project']
+
+        return f"{project}.{dataset}.{table}"
     
     def _get_output_fields(self) -> List[Field]:
         _, dataset, table = self._get_project_dataset_table()

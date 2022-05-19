@@ -94,5 +94,11 @@ class TestGcsToBqExtractor(unittest.TestCase):
     
     def test_output_dataset_name(self):
         meta_extractor = self.meta_extractor
-        _, dataset, table = meta_extractor._get_project_dataset_table()
-        self.assertEqual(meta_extractor._get_output_dataset_name(), f"{dataset}.{table}")
+        project, dataset, table = meta_extractor._get_project_dataset_table()
+
+        if project is None:
+            conn = meta_extractor._get_bq_connection()
+            extras = json.loads(conn.get_extra())
+            project = extras['extra__google_cloud_platform__project']
+
+        self.assertEqual(meta_extractor._get_output_dataset_name(), f"{project}.{dataset}.{table}")

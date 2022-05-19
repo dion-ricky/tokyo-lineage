@@ -132,7 +132,7 @@ class MongoToAvroExtractor(BaseMetadataExtractor):
             if raw_annotation is None:
                 continue
 
-            annotation: dict = raw_annotation
+            annotation: dict = raw_annotation['annotation']
 
             self.log.info("Table {} has this annotation: ".format(table))
             self.log.info(json.dumps(annotation))

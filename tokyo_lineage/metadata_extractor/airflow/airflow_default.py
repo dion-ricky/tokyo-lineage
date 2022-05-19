@@ -12,5 +12,6 @@ AIRFLOW_METADATA_EXTRACTORS = [
     PostgresToAvroExtractor,
     FileToGcsExtractor,
     GcsToBigQueryExtractor,
-    MySqlToAvroExtractor
+    MySqlToAvroExtractor,
+    MongoToAvroExtractor
 ]

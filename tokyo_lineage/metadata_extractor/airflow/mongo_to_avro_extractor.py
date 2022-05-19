@@ -1,8 +1,6 @@
 import json
 from typing import Type, List, Any
 
-from avro import schema as avro_schema
-
 from airflow.models import BaseOperator
 
 from openlineage.client.facet import SqlJobFacet

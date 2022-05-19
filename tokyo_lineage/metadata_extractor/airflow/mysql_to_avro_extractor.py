@@ -3,7 +3,6 @@ from typing import Type, List, Any, Optional
 
 from contextlib import closing
 from urllib.parse import urlparse
-from avro import schema as avro_schema
 
 from airflow.models import BaseOperator
 

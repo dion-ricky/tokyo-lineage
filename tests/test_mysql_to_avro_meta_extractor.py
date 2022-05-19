@@ -4,7 +4,6 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock
 
-from avro import schema
 from airflow.utils.state import State
 
 from openlineage.common.dataset import Field

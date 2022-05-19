@@ -1,7 +1,6 @@
 import json
 from typing import Type, List, Any
 
-from avro import schema as avro_schema
 from contextlib import closing
 from typing import Optional, List
 from urllib.parse import urlparse

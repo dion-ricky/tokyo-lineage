@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 from tokyo_lineage.models.airflow_task import AirflowTask, AirflowTaskMismatch
 from tokyo_lineage.models.airflow_dag import AirflowDag

@@ -61,6 +61,22 @@ def mysql_connection_uri(conn) -> str:
     return get_connection_uri(conn)
 
 
+def mongo_scheme() -> str:
+    return 'mongo'
+
+
+def mongo_authority(conn) -> str:
+    if conn.host and conn.port:
+        return f'{conn.host}:{conn.port}'
+    else:
+        parsed = urlparse(conn.get_uri())
+        return f'{parsed.host}:{parsed.port}'
+
+
+def mongo_connection_uri(conn) -> str:
+    return get_connection_uri(conn)
+
+
 def gcs_scheme() -> str:
     return 'gs'
 

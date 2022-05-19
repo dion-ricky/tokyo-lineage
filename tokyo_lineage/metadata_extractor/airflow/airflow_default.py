@@ -3,7 +3,8 @@ from tokyo_lineage.metadata_extractor.airflow import (
     PostgresToAvroExtractor,
     FileToGcsExtractor,
     GcsToBigQueryExtractor,
-    MySqlToAvroExtractor
+    MySqlToAvroExtractor,
+    MongoToAvroExtractor
 )
 
 AIRFLOW_METADATA_EXTRACTORS = [

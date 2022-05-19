@@ -1,16 +1,11 @@
-import os
 from datetime import datetime
 import unittest
-from unittest.mock import Mock, MagicMock, PropertyMock
+from unittest.mock import Mock
 
-from airflow.utils.state import State
-
-from openlineage.airflow.utils import get_custom_facets
 from openlineage.airflow.extractors.base import TaskMetadata
 
-from tokyo_lineage.utils.airflow import get_dagruns, get_location
+from tokyo_lineage.utils.airflow import get_dagruns
 from tokyo_lineage.models.airflow_task import AirflowTask
-from tokyo_lineage.models.airflow_dag import AirflowDag
 from tokyo_lineage.extractor.airflow_extractor import AirflowExtractor, AirflowMetaExtractor
 
 class TestAirflowExctractor(unittest.TestCase):

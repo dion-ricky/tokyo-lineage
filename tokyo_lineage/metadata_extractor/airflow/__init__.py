@@ -4,3 +4,4 @@ from tokyo_lineage.metadata_extractor.airflow.file_to_gcs_extractor import FileT
 from tokyo_lineage.metadata_extractor.airflow.gcs_to_bigquery_extractor import GcsToBigQueryExtractor
 from tokyo_lineage.metadata_extractor.airflow.mysql_to_avro_extractor import MySqlToAvroExtractor
 from tokyo_lineage.metadata_extractor.airflow.mongo_to_avro_extractor import MongoToAvroExtractor
+from tokyo_lineage.metadata_extractor.airflow.bigquery_extractor import BigQueryExtractor

@@ -4,7 +4,6 @@ import unittest
 from datetime import datetime
 from unittest.mock import Mock
 
-from avro import schema
 from airflow.utils.state import State
 
 from openlineage.common.dataset import Source, Field
@@ -104,7 +103,7 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         }
         """)
 
-        meta_extractor._get_avro_schema = lambda: schema.parse(json.dumps(avro_schema_json))
+        meta_extractor._get_avro_schema = lambda: json.dumps(avro_schema_json)
 
         fields = [
             Field(

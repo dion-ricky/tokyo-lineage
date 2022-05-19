@@ -57,3 +57,55 @@ class TestSqlParser(unittest.TestCase):
         compared_to = sorted(compared_to)
 
         self.assertListEqual(qualified_names, compared_to)
+
+    def test_cte(self):
+        sql = """
+        WITH
+        staff_alberta AS (
+        SELECT
+            staff_id,
+            first_name,
+            last_name,
+            email,
+            username,
+            a.phone AS phone
+        FROM
+            `dionricky-personal.alberta.staff` s
+        LEFT JOIN
+            `dionricky-personal.alberta.address` a
+        ON
+            s.address_id = a.address_id ),
+        staff_queensland AS (
+        SELECT
+            staff_id,
+            first_name,
+            last_name,
+            email,
+            username,
+            a.phone AS phone
+        FROM
+            `dionricky-personal.queensland.staff` s
+        LEFT JOIN
+            `dionricky-personal.queensland.address` a
+        ON
+            s.address_id = a.address_id )
+        SELECT
+        *
+        FROM
+        staff_alberta
+        UNION DISTINCT
+        SELECT
+        *
+        FROM
+        staff_queensland;
+        """
+
+        sql_meta: SqlMeta = SqlParser.parse(sql, 'public')
+        
+        qualified_names = [t.qualified_name for t in sql_meta.in_tables]
+        compared_to = ['table1', 'table2']
+
+        qualified_names = sorted(qualified_names)
+        compared_to = sorted(compared_to)
+
+        self.assertListEqual(qualified_names, compared_to)

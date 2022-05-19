@@ -4,7 +4,8 @@ from tokyo_lineage.metadata_extractor.airflow import (
     FileToGcsExtractor,
     GcsToBigQueryExtractor,
     MySqlToAvroExtractor,
-    MongoToAvroExtractor
+    MongoToAvroExtractor,
+    BigQueryExtractor
 )
 
 AIRFLOW_METADATA_EXTRACTORS = [
@@ -13,5 +14,6 @@ AIRFLOW_METADATA_EXTRACTORS = [
     FileToGcsExtractor,
     GcsToBigQueryExtractor,
     MySqlToAvroExtractor,
-    MongoToAvroExtractor
+    MongoToAvroExtractor,
+    BigQueryExtractor
 ]

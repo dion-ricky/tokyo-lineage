@@ -104,7 +104,7 @@ class TestPgToAvroMetaExtractor(unittest.TestCase):
         }
         """)
 
-        meta_extractor._get_avro_schema = lambda: schema.parse(json.dumps(avro_schema_json))
+        meta_extractor._get_avro_schema = lambda: json.dumps(avro_schema_json)
 
         fields = [
             Field(

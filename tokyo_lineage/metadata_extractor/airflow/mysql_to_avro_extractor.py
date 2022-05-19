@@ -34,6 +34,7 @@ from tokyo_lineage.utils.dataset_naming_helper import (
     mysql_authority,
     mysql_connection_uri
 )
+from tokyo_lineage.utils.avro import get_avro_fields
 
 _TABLE_SCHEMA = 0
 _TABLE_NAME = 1
@@ -141,39 +142,10 @@ class MySqlToAvroExtractor(BaseMetadataExtractor):
         return self.operator.avro_output_path
 
     def _get_avro_fields(self) -> List[Field]:
-        schema = self._get_avro_schema()
-        fields = schema.props['fields']
-
-        fields = [
-            Field(
-                name=f.name,
-                type=self._filter_avro_field_type(f.type)
-            ) for f in fields
-        ]
-
-        return fields
+        return get_avro_fields(self._get_avro_schema())
     
-    def _get_avro_schema(self, schema: str = None):
-        if not schema:
-            avro_schema_json = json.loads(open(self.operator.avro_schema_path, 'r+').read())
-        else:
-            avro_schema_json = json.loads(schema)
-        
-        return avro_schema.parse(json.dumps(avro_schema_json))
-
-    def _filter_avro_field_type(self, types) -> str:
-        if not hasattr(types, '_schemas'):
-            try:
-                return types.logical_type
-            except:
-                return types.type
-
-        for f in types._schemas:
-            if f.type != 'null':
-                try:
-                    return f.logical_type
-                except:
-                    return f.type
+    def _get_avro_schema(self) -> str:
+        return open(self.operator.avro_schema_path, 'r+').read()
 
     def _conn_id(self) -> str:
         return self.operator.mysql_conn_id

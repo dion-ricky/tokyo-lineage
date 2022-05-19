@@ -1,7 +1,7 @@
 from distutils.core import setup
 from setuptools import find_namespace_packages
 
-VERSION = '0.6a0'
+VERSION = '0.6a1'
 
 setup(
     name="tokyo-lineage",
@@ -12,7 +12,7 @@ setup(
     author="Dion Ricky Saputra",
     author_email="code@dionricky.com",
     url="https://github.com/dion-ricky/tokyo-lineage",
-    download_url="https://github.com/dion-ricky/tokyo-lineage/releases/download/0.6a0/tokyo-lineage-0.6a0.tar.gz",
+    download_url="https://github.com/dion-ricky/tokyo-lineage/releases/download/0.6a1/tokyo-lineage-0.6a1.tar.gz",
     keywords=["data lineage"],
     install_requires=[
         "alembic==1.4.2",
@@ -101,6 +101,7 @@ setup(
         "pydata-google-auth==1.3.0",
         "Pygments==2.6.1",
         "PyJWT==1.7.1",
+        "pymongo==4.1.1",
         "pyparsing==3.0.7",
         "pyrsistent==0.16.0",
         "python-daemon==2.2.4",

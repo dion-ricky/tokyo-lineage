@@ -19,6 +19,7 @@ class TestBigQueryMetaExtractor(unittest.TestCase):
         _task.task_id = task_id
         _task.dag_id = 'test_dag'
         _task.avro_output_path = '/test/path.avro'
+        _task.destination_dataset_table = 'dataset.table'
 
         bq_conn = Mock()
         bq_conn.host = 'localhost'
@@ -82,3 +83,8 @@ class TestBigQueryMetaExtractor(unittest.TestCase):
         _, dataset, table = 'dionricky-personal.queensland.customer'.split('.')
         conn_uri1 = meta_extractor._get_bq_connection_uri(dataset, table)
         self.assertEqual(conn_uri1, "bigquery:dionricky-personal.queensland.customer")
+    
+    def test_output_dataset_name(self):
+        meta_extractor = self.meta_extractor
+        output_dataset_name = meta_extractor._get_output_dataset_name()
+        self.assertEqual(output_dataset_name, 'dionricky-personal.dataset.table')

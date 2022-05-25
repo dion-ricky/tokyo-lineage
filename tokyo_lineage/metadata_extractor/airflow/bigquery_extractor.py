@@ -97,7 +97,9 @@ class BigQueryExtractor(BaseMetadataExtractor):
         return bq_authority(self._get_bq_connection())
 
     def _get_output_dataset_name(self) -> str:
-        return self.operator.destination_dataset_table
+        database = self._get_database()
+        dataset_table = self.operator.destination_dataset_table
+        return f"{database}.{dataset_table}"
 
     def _get_bq_connection(self):
         return get_connection(self._conn_id())

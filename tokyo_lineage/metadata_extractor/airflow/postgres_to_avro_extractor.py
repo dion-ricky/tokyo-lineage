@@ -1,8 +1,7 @@
 import json
-from typing import Type, List, Any
+from typing import Type, List, Any, Optional
 
 from contextlib import closing
-from typing import Optional, List
 from urllib.parse import urlparse
 
 from airflow.models import BaseOperator
@@ -91,6 +90,9 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                 sql_meta.in_tables
             )
         ]
+
+        # Extract fields from source
+        self._extract_table_fields(inputs)
 
         # Extracting annotation from source
         self._extract_annotations(inputs)
@@ -221,6 +223,20 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
                         )
 
         return list(schemas_by_table.values())
+
+    def _extract_table_fields(
+        self,
+        datasets: List[Dataset]
+    ) -> List[Dataset]:
+        for dataset in datasets:
+            table_name = DbTableName(dataset.name)
+            table_schema: DbTableSchema = self._get_table_schemas([table_name])[0]
+            dataset.fields = [
+                Field.from_column(column) for column in sorted(
+                    table_schema.columns, key=lambda x: x.ordinal_position
+                )
+            ]
+        return datasets
 
     def _extract_annotations(
         self,

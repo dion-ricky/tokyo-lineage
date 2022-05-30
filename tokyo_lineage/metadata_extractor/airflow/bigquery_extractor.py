@@ -200,7 +200,7 @@ class BigQueryExtractor(BaseMetadataExtractor):
                                 table_name=table_name,
                                 columns=[table_column]
                             )
-        return list(schemas_by_table.value())
+        return list(schemas_by_table.values())
     
     def _extract_table_fields(
         self,

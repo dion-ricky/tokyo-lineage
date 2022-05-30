@@ -1,4 +1,3 @@
-import attr
 import json
 from typing import Type, List, Any, Optional
 
@@ -155,7 +154,8 @@ class BigQueryExtractor(BaseMetadataExtractor):
             airflow_2_path="airflow.providers.google.cloud.hooks.bigquery.BigQueryHook"
         )
         return BigQueryHook(
-            bigquery_conn_id=self.operator.bigquery_conn_id
+            bigquery_conn_id=self.operator.bigquery_conn_id,
+            use_legacy_sql=False
         )
     
     def _get_table_schemas(

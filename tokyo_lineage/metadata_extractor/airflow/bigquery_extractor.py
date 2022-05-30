@@ -172,11 +172,15 @@ class BigQueryExtractor(BaseMetadataExtractor):
                 for table_name in table_names:
                     dataset_name = table_name.schema
                     _table_name = table_name.name
-                    cursor.execute(
-                        self._information_schema_query(
-                            dataset_name, _table_name
+                    try:
+                        cursor.execute(
+                            self._information_schema_query(
+                                dataset_name, _table_name
+                            )
                         )
-                    )
+                    except Exception as e:
+                        self.log.error(str(e))
+                        continue
                     for row in cursor.fetchall():
                         table_schema_name: str = row[_TABLE_SCHEMA]
                         table_name: DbTableName = DbTableName(row[_TABLE_NAME])

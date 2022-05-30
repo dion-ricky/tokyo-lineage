@@ -155,7 +155,7 @@ class BigQueryExtractor(BaseMetadataExtractor):
             airflow_2_path="airflow.providers.google.cloud.hooks.bigquery.BigQueryHook"
         )
         return BigQueryHook(
-            bigquery_conn_id=self.operator.postgres_conn_id
+            bigquery_conn_id=self.operator.bigquery_conn_id
         )
     
     def _get_table_schemas(

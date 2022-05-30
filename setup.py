@@ -1,7 +1,7 @@
 from distutils.core import setup
 from setuptools import find_namespace_packages
 
-VERSION = '0.6a8'
+VERSION = '0.6a9'
 
 setup(
     name="tokyo-lineage",
@@ -12,7 +12,7 @@ setup(
     author="Dion Ricky Saputra",
     author_email="code@dionricky.com",
     url="https://github.com/dion-ricky/tokyo-lineage",
-    download_url="https://github.com/dion-ricky/tokyo-lineage/releases/download/0.6a8/tokyo-lineage-0.6a8.tar.gz",
+    download_url="https://github.com/dion-ricky/tokyo-lineage/releases/download/0.6a9/tokyo-lineage-0.6a9.tar.gz",
     keywords=["data lineage"],
     install_requires=[
         "alembic==1.4.2",

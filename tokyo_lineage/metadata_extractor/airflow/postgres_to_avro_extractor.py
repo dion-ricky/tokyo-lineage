@@ -258,20 +258,8 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
             self.log.info(json.dumps(annotation))
 
             annotation_facet = Annotation()
-            
-            # Row annotation
-            annotation_facet.row_annotation = annotation['rows'] \
-                if 'rows' in annotation else None
-            
-            # Columns annotation
-            annotation_facet.column_annotation = annotation['columns'] \
-                if 'columns' in annotation else None
-            
-            # Dataset annotation
-            dataset_annotation = annotation.copy()
-            dataset_annotation.pop('rows', None)
-            dataset_annotation.pop('columns', None)
-            annotation_facet.dataset_annotation = dataset_annotation
+
+            annotation_facet.annotation = annotation
             
             dataset.custom_facets.update({
                 "annotation": annotation_facet

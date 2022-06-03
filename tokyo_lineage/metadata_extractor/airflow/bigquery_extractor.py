@@ -167,43 +167,47 @@ class BigQueryExtractor(BaseMetadataExtractor):
         schemas_by_table = {}
 
         hook = self._get_hook()
-        with closing(hook.get_conn()) as conn:
-            with closing(conn.cursor()) as cursor:
-                for table_name in table_names:
-                    dataset_name = table_name.schema
-                    _table_name = table_name.name
-                    try:
-                        cursor.execute(
-                            self._information_schema_query(
-                                dataset_name, _table_name
-                            )
-                        )
-                    except Exception as e:
-                        self.log.error(str(e))
-                        continue
-                    for row in cursor.fetchall():
-                        table_schema_name: str = row[_TABLE_SCHEMA]
-                        table_name: DbTableName = DbTableName(row[_TABLE_NAME])
-                        table_column: DbColumn = DbColumn(
-                            name=row[_COLUMN_NAME],
-                            type=row[_DATA_TYPE],
-                            ordinal_position=row[_ORDINAL_POSITION]
-                        )
 
-                        # Attempt to get table schema
-                        table_key: str = f"{table_schema_name}.{_table_name}"
-                        table_schema: Optional[DbTableSchema] = schemas_by_table.get(table_key)
+        for table_name in table_names:
+            dataset_name = table_name.schema
+            _table_name = table_name.name
 
-                        if table_schema:
-                            # Add column to existing table schema.
-                            schemas_by_table[table_key].columns.append(table_column)
-                        else:
-                            # Create new table schema with column.
-                            schemas_by_table[table_key] = DbTableSchema(
-                                schema_name=table_schema_name,
-                                table_name=table_name,
-                                columns=[table_column]
+            with closing(hook.get_conn()) as conn:
+                with closing(conn.cursor()) as cursor:
+                        try:
+                            cursor.execute(
+                                self._information_schema_query(
+                                    dataset_name, _table_name
+                                )
                             )
+                        except Exception as e:
+                            self.log.error(str(e))
+                            continue
+
+                        for row in cursor.fetchall():
+                            table_schema_name: str = row[_TABLE_SCHEMA]
+                            table_name: DbTableName = DbTableName(row[_TABLE_NAME])
+                            table_column: DbColumn = DbColumn(
+                                name=row[_COLUMN_NAME],
+                                type=row[_DATA_TYPE],
+                                ordinal_position=row[_ORDINAL_POSITION]
+                            )
+
+                            # Attempt to get table schema
+                            table_key: str = f"{table_schema_name}.{table_name}"
+                            table_schema: Optional[DbTableSchema] = schemas_by_table.get(table_key)
+
+                            if table_schema:
+                                # Add column to existing table schema.
+                                schemas_by_table[table_key].columns.append(table_column)
+                            else:
+                                # Create new table schema with column.
+                                schemas_by_table[table_key] = DbTableSchema(
+                                    schema_name=table_schema_name,
+                                    table_name=table_name,
+                                    columns=[table_column]
+                                )
+        
         return list(schemas_by_table.values())
     
     def _extract_table_fields(

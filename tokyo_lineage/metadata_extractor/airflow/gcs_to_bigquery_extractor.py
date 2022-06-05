@@ -126,11 +126,13 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         _, dataset, table = self._get_project_dataset_table()
         sql = f"""
         SELECT
-            *
-        FROM
-            {dataset}.INFORMATION_SCHEMA.COLUMNS
-        WHERE table_name = '{table}'
-        ORDER BY ordinal_position;
+            table_schema,
+            table_name,
+            column_name,
+            ordinal_position,
+            data_type
+        FROM {dataset}.INFORMATION_SCHEMA.COLUMNS
+        WHERE table_name='{table}';
         """
 
         bq_hook = BigQueryHook(bigquery_conn_id=self.operator.bigquery_conn_id,
@@ -144,8 +146,8 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
 
         fields = [
             Field(
-                name=f[3],
-                type=f"{f[6]}".lower()
+                name=f[2],
+                type=f[4]
             ) for f in _fields
         ]
 

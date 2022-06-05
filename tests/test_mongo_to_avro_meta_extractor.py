@@ -51,8 +51,10 @@ class TestMongoToAvroMetaExtractor(unittest.TestCase):
     
     def test_mongo_connection_uri(self):
         meta_extractor = self.meta_extractor
+        database = 'test_db'
+        collection = 'test'
 
-        self.assertEqual(meta_extractor._get_mongo_connection_uri(), 'mongodb://localhost:27017/?authSource=admin')
+        self.assertEqual(meta_extractor._get_mongo_connection_uri(database, collection), 'mongodb://localhost:27017/test_db.test?authSource=admin')
 
     def test_mongo_authority(self):
         meta_extractor = self.meta_extractor

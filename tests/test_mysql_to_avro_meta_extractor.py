@@ -54,8 +54,10 @@ class TestMySqlToAvroMetaExtractor(unittest.TestCase):
 
     def test_mysql_connection_uri(self):
         meta_extractor = self.meta_extractor
+        database = 'sakila'
+        table = 'test'
 
-        self.assertEqual(meta_extractor._get_mysql_connection_uri(), 'mysql://localhost:3306/sakila')
+        self.assertEqual(meta_extractor._get_mysql_connection_uri(database, table), 'mysql://localhost:3306/sakila.test')
 
     def test_mysql_authority(self):
         meta_extractor = self.meta_extractor

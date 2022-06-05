@@ -56,9 +56,12 @@ class TestUtilsDatasetNaming(unittest.TestCase):
 
     def test_pg_connection_uri(self):
         conn = Mock()
-        conn.get_uri = lambda: 'postgres://postgres:postgres@localhost:5432/test'
+        conn.get_uri = lambda: 'postgres://postgres:postgres@localhost:5432/test_db'
+        database = 'test_db'
+        schema = 'public'
+        table = 'test'
         
-        self.assertEqual(pg_connection_uri(conn), 'postgres://localhost:5432/test')
+        self.assertEqual(pg_connection_uri(conn, database, schema, table), 'postgres://localhost:5432/test_db.public.test')
     
     def test_mysql_scheme(self):
         self.assertEqual(mysql_scheme(), 'mysql')
@@ -73,8 +76,10 @@ class TestUtilsDatasetNaming(unittest.TestCase):
     def test_mysql_connection_uri(self):
         conn = Mock()
         conn.get_uri = lambda: 'mysql://root:mysql@localhost:3306/test'
+        database = 'test_db'
+        table = 'test'
 
-        self.assertEqual(mysql_connection_uri(conn), 'mysql://localhost:3306/test')
+        self.assertEqual(mysql_connection_uri(conn, database, table), 'mysql://localhost:3306/test_db.test')
 
     def test_mongo_scheme(self):
         self.assertEqual(mongo_scheme(), 'mongo')
@@ -89,8 +94,10 @@ class TestUtilsDatasetNaming(unittest.TestCase):
     def test_mongo_connection_uri(self):
         conn = Mock()
         conn.get_uri = lambda: 'mongodb://mongo:mongo@localhost:27017/'
+        database = 'test_db'
+        collection = 'test'
 
-        self.assertEqual(mongo_connection_uri(conn), 'mongodb://localhost:27017/')
+        self.assertEqual(mongo_connection_uri(conn, database, collection), 'mongodb://localhost:27017/test_db.test')
     
     def test_gcs_scheme(self):
         self.assertEqual(gcs_scheme(), 'gs')

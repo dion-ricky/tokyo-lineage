@@ -68,11 +68,12 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         # (3) Default all inputs / outputs to current connection.
         # NOTE: We'll want to look into adding support for the `database`
         # property that is used to override the one defined in the connection.
-        postgres_source = Source(
-            scheme=self._get_pg_scheme(),
-            authority=self._get_pg_authority(),
-            connection_url=self._get_pg_connection_uri()
-        )
+        def pg_source(database, schema, table):
+            return Source(
+                scheme=self._get_pg_scheme(),
+                authority=self._get_pg_authority(),
+                connection_url=self._get_pg_connection_uri(database, schema, table)
+            )
 
         database = self._get_database()
 
@@ -82,7 +83,7 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         # {schema_name}.{table_name}
         inputs = [
             Dataset.from_table(
-                source=postgres_source,
+                source=pg_source(database, in_table_schema.schema_name, in_table_schema.table_name.name),
                 table_name=in_table_schema.table_name.name,
                 schema_name=in_table_schema.schema_name,
                 database_name=database
@@ -123,11 +124,11 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
     def _get_fs_scheme(self) -> str:
         return fs_scheme()
 
-    def _get_fs_connection_uri(self) -> str:
-        return fs_connection_uri(self.operator.avro_output_path)
-    
     def _get_fs_authority(self) -> str:
         return fs_authority()
+
+    def _get_fs_connection_uri(self) -> str:
+        return fs_connection_uri(self.operator.avro_output_path)
     
     def _get_output_dataset_name(self) -> str:
         return self.operator.avro_output_path
@@ -138,11 +139,14 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
     def _get_avro_schema(self) -> str:
         return open(self.operator.avro_schema_path, 'r+').read()
 
-    def _get_pg_connection_uri(self) -> str:
-        return pg_connection_uri(self.conn)
-
     def _get_pg_scheme(self) -> str:
         return pg_scheme()
+
+    def _get_pg_connection_uri(self, database, schema, table) -> str:
+        return pg_connection_uri(self.conn, database, schema, table)
+
+    def _get_pg_authority(self) -> str:
+        return pg_authority(self.conn)
 
     def _get_database(self) -> str:
         if self.conn.schema:
@@ -150,9 +154,6 @@ class PostgresToAvroExtractor(BaseMetadataExtractor):
         else:
             parsed = urlparse(self.conn.get_uri())
             return f'{parsed.path}'
-
-    def _get_pg_authority(self) -> str:
-        return pg_authority(self.conn)
 
     def _conn_id(self) -> str:
         return self.operator.postgres_conn_id

@@ -1,6 +1,6 @@
 import json
 import platform
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 from openlineage.airflow.utils import (
     get_connection_uri,
@@ -41,8 +41,12 @@ def pg_authority(conn) -> str:
         return f'{parsed.hostname}:{parsed.port}'
 
 
-def pg_connection_uri(conn) -> str:
-    return get_normalized_postgres_connection_uri(conn)
+def pg_connection_uri(conn, database, schema, table) -> str:
+    conn_uri = get_normalized_postgres_connection_uri(conn)
+    parsed = urlparse(conn_uri)
+    dst = f'/{database}.{schema}.{table}'
+    parsed = parsed._replace(path=dst)
+    return urlunparse(parsed)
 
 
 def mysql_scheme() -> str:
@@ -57,8 +61,12 @@ def mysql_authority(conn) -> str:
         return f'{parsed.host}:{parsed.port}'
 
 
-def mysql_connection_uri(conn) -> str:
-    return get_connection_uri(conn)
+def mysql_connection_uri(conn, database, table) -> str:
+    conn_uri = get_connection_uri(conn)
+    parsed = urlparse(conn_uri)
+    dt = f'/{database}.{table}'
+    parsed = parsed._replace(path=dt)
+    return urlunparse(parsed)
 
 
 def mongo_scheme() -> str:
@@ -73,8 +81,12 @@ def mongo_authority(conn) -> str:
         return f'{parsed.host}:{parsed.port}'
 
 
-def mongo_connection_uri(conn) -> str:
-    return get_connection_uri(conn)
+def mongo_connection_uri(conn, database, collection) -> str:
+    conn_uri = get_connection_uri(conn)
+    parsed = urlparse(conn_uri)
+    dc = f'/{database}.{collection}'
+    parsed = parsed._replace(path=dc)
+    return urlunparse(parsed)
 
 
 def gcs_scheme() -> str:

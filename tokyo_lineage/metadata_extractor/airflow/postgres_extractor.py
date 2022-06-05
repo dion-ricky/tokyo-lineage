@@ -73,11 +73,12 @@ class PostgresExtractor(BaseMetadataExtractor):
         # (3) Default all inputs / outputs to current connection.
         # NOTE: We'll want to look into adding support for the `database`
         # property that is used to override the one defined in the connection.
-        source = Source(
-            scheme=self._get_scheme(),
-            authority=self._get_authority(),
-            connection_url=self._get_connection_uri()
-        )
+        def pg_source(database, schema, table):
+            return Source(
+                scheme=self._get_scheme(),
+                authority=self._get_authority(),
+                connection_url=self._get_connection_uri(database, schema, table)
+            )
 
         database = self.operator.database
         if not database:
@@ -89,7 +90,7 @@ class PostgresExtractor(BaseMetadataExtractor):
         # {schema_name}.{table_name}
         inputs = [
             Dataset.from_table(
-                source=source,
+                source=pg_source(database, in_table_schema.schema_name, in_table_schema.table_name.name),
                 table_name=in_table_schema.table_name.name,
                 schema_name=in_table_schema.schema_name,
                 database_name=database
@@ -99,7 +100,7 @@ class PostgresExtractor(BaseMetadataExtractor):
         ]
         outputs = [
             Dataset.from_table_schema(
-                source=source,
+                source=pg_source(database, out_table_schema.schema_name, out_table_schema.table_name.name),
                 table_schema=out_table_schema,
                 database_name=database
             ) for out_table_schema in self._get_table_schemas(
@@ -116,11 +117,14 @@ class PostgresExtractor(BaseMetadataExtractor):
             }
         )
 
-    def _get_connection_uri(self) -> str:
-        return pg_connection_uri(self.conn)
-
     def _get_scheme(self) -> str:
         return pg_scheme()
+
+    def _get_authority(self) -> str:
+        return pg_authority(self.conn)
+
+    def _get_connection_uri(self, database, schema, table) -> str:
+        return pg_connection_uri(self.conn, database, schema, table)
 
     def _get_database(self) -> str:
         if self.conn.schema:
@@ -128,9 +132,6 @@ class PostgresExtractor(BaseMetadataExtractor):
         else:
             parsed = urlparse(self.conn.get_uri())
             return f'{parsed.path}'
-
-    def _get_authority(self) -> str:
-        return pg_authority(self.conn)
 
     def _conn_id(self) -> str:
         return self.operator.postgres_conn_id

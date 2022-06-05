@@ -15,7 +15,7 @@ class BaseMetadataExtractor(ABC, LoggingMixin):
         pass
     
     def validate(self):
-        assert (self.task.operator in self.get_operator_classnames())
+        assert (self.task.operator_name in self.get_operator_classnames())
     
     @abstractmethod
     def extract(self) -> Optional[TaskMetadata]:

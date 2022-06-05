@@ -38,18 +38,19 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
         return self.task.task
     
     def extract(self) -> Optional[TaskMetadata]:
+        def gcs_source(bucket, path):
+            return Source(
+                scheme=self._get_gcs_scheme(),
+                authority=self._get_gcs_authority(),
+                connection_url=self._get_gcs_connection_uri(bucket, path)
+            )
 
         # input_dataset_name is bucket name
         inputs = [
             Dataset(
                 name=self._get_input_dataset_name(),
-                source=Source(
-                    scheme=self._get_gcs_scheme(),
-                    authority=self._get_gcs_authority(),
-                    connection_url=gcs_connection_uri(self.operator.bucket,
-                                                        source_object)
-                )
-            ) for source_object in self.operator.source_objects
+                source=gcs_source(self.operator.bucket, source_path)
+            ) for source_path in self.operator.source_objects
         ]
 
         # output_source generated from bigquery_conn_id
@@ -83,7 +84,10 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
     
     def _get_gcs_authority(self) -> str:
         return gcs_authority(self.operator.bucket)
-    
+
+    def _get_gcs_connection_uri(self, bucket, path) -> str:
+        return gcs_connection_uri(bucket, path)
+
     def _get_project_dataset_table(self):
         project_dataset_table = self.operator.destination_project_dataset_table
         filler = [None] * (3-len(project_dataset_table.split('.')))
@@ -99,15 +103,15 @@ class GcsToBigQueryExtractor(BaseMetadataExtractor):
     def _get_bq_scheme(self) -> str:
         return bq_scheme()
     
+    def _get_bq_authority(self) -> str:
+        conn = self._get_bq_connection()
+        return bq_authority(conn)
+
     def _get_bq_connection_uri(self) -> str:
         _, dataset, table = self._get_project_dataset_table()
         conn = self._get_bq_connection()
         return bq_connection_uri(conn, dataset, table)
     
-    def _get_bq_authority(self) -> str:
-        conn = self._get_bq_connection()
-        return bq_authority(conn)
-
     def _get_output_dataset_name(self) -> str:
         project, dataset, table = self._get_project_dataset_table()
         

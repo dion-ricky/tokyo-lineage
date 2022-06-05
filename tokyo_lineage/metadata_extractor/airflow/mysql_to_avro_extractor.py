@@ -63,11 +63,12 @@ class MySqlToAvroExtractor(BaseMetadataExtractor):
         self.conn = get_connection(self._conn_id())
 
         # (3) Default all inputs / outputs to current connection.
-        mysql_source = Source(
-            scheme=self._get_mysql_scheme(),
-            authority=self._get_mysql_authority(),
-            connection_url=self._get_mysql_connection_uri()
-        )
+        def mysql_source(database, table):
+            return Source(
+                scheme=self._get_mysql_scheme(),
+                authority=self._get_mysql_authority(),
+                connection_url=self._get_mysql_connection_uri(database, table)
+            )
 
         database = self._get_database()
 
@@ -77,7 +78,7 @@ class MySqlToAvroExtractor(BaseMetadataExtractor):
         # {schema_name}.{table_name}
         inputs = [
             Dataset.from_table(
-                source=mysql_source,
+                source=mysql_source(database, in_table_schema.table_name.name),
                 table_name=in_table_schema.table_name.name,
                 schema_name=in_table_schema.schema_name,
                 database_name=database
@@ -115,14 +116,14 @@ class MySqlToAvroExtractor(BaseMetadataExtractor):
             }
         )
 
-    def _get_mysql_connection_uri(self) -> str:
-        return mysql_connection_uri(self.conn)
-
     def _get_mysql_scheme(self) -> str:
         return mysql_scheme()
 
     def _get_mysql_authority(self) -> str:
         return mysql_authority(self.conn)
+
+    def _get_mysql_connection_uri(self, database, table) -> str:
+        return mysql_connection_uri(self.conn, database, table)
 
     def _get_database(self) -> str:
         if self.conn.schema:
@@ -134,11 +135,11 @@ class MySqlToAvroExtractor(BaseMetadataExtractor):
     def _get_fs_scheme(self) -> str:
         return fs_scheme()
     
-    def _get_fs_connection_uri(self) -> str:
-        return fs_connection_uri(self.operator.avro_output_path)
-
     def _get_fs_authority(self) -> str:
         return fs_authority()
+
+    def _get_fs_connection_uri(self) -> str:
+        return fs_connection_uri(self.operator.avro_output_path)
 
     def _get_output_dataset_name(self) -> str:
         return self.operator.avro_output_path

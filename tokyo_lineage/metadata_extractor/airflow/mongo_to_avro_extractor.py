@@ -40,16 +40,17 @@ class MongoToAvroExtractor(BaseMetadataExtractor):
     def extract(self) -> TaskMetadata:
         self.conn = get_connection(self._conn_id())
 
-        mongo_source = Source(
-            scheme=self._get_mongo_scheme(),
-            authority=self._get_mongo_authority(),
-            connection_url=self._get_mongo_connection_uri()
-        )
+        def mongo_source(database, collection):
+            return Source(
+                scheme=self._get_mongo_scheme(),
+                authority=self._get_mongo_authority(),
+                connection_url=self._get_mongo_connection_uri(database, collection)
+            )
 
         inputs = [
             Dataset(
                 name=self._get_input_dataset_name(),
-                source=mongo_source
+                source=mongo_source(self._get_database(), self._get_collection())
             )
         ]
 
@@ -79,14 +80,14 @@ class MongoToAvroExtractor(BaseMetadataExtractor):
             }
         )
 
-    def _get_mongo_connection_uri(self) -> str:
-        return mongo_connection_uri(self.conn)
-
     def _get_mongo_scheme(self) -> str:
         return mongo_scheme()
 
     def _get_mongo_authority(self) -> str:
         return mongo_authority(self.conn)
+
+    def _get_mongo_connection_uri(self, database, collection) -> str:
+        return mongo_connection_uri(self.conn, database, collection)
 
     def _get_fs_connection_uri(self) -> str:
         return fs_connection_uri(self.operator.avro_output_path)
@@ -96,6 +97,12 @@ class MongoToAvroExtractor(BaseMetadataExtractor):
 
     def _get_fs_authority(self) -> str:
         return fs_authority()
+
+    def _get_database(self):
+        return self.operator.database
+    
+    def _get_collection(self):
+        return self.operator.collection
 
     def _get_input_dataset_name(self) -> str:
         collection = self.operator.collection

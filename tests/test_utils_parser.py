@@ -272,3 +272,195 @@ FROM (
         compare_to = []
 
         self.assertListEqual(parsed_tables, compare_to)
+    
+    def test_multiple_join_to_one_table(self):
+        sql = """-- ADDED JOIN WITH date_dimension
+WITH
+  rental_alberta AS (
+  SELECT
+    i.film_id,
+    r.customer_id,
+    r.staff_id,
+    i.store_id,
+    d_rental.id AS rental_date,
+    d_return.id AS return_date,
+    f.rental_rate,
+    rp.amount_paid,
+    CASE
+      WHEN return_date != '1970-01-01 07:00:00.0' THEN DATE_DIFF(DATE(return_date), DATE(rental_date), DAY)
+    ELSE
+    NULL
+  END
+    AS rent_duration,
+    1 AS src
+  FROM
+    `dionricky-personal.alberta.rental` r
+  LEFT JOIN
+    `dionricky-personal.alberta.inventory` i
+  ON
+    r.inventory_id = i.inventory_id
+  LEFT JOIN
+    `dionricky-personal.alberta.film` f
+  ON
+    i.film_id = f.film_id
+  LEFT JOIN (
+    SELECT
+      r.rental_id,
+      SUM(p.amount) AS amount_paid
+    FROM
+      `dionricky-personal.alberta.rental` r
+    LEFT JOIN
+      `dionricky-personal.alberta.payment` p
+    ON
+      r.rental_id = p.rental_id
+    GROUP BY
+      r.rental_id ) rp
+  ON
+    r.rental_id = rp.rental_id
+  LEFT JOIN
+    `dionricky-personal.warehouse.date_dimension` d_rental
+  ON
+    DATE(rental_date) = d_rental.full_date
+  LEFT JOIN
+    `dionricky-personal.warehouse.date_dimension` d_return
+  ON
+    DATE(COALESCE(return_date,
+        '1970-01-01 07:00:00.0')) = d_return.full_date ),
+  rental_queensland AS (
+  SELECT
+    i.film_id,
+    r.customer_id,
+    r.staff_id,
+    i.store_id,
+    d_rental.id AS rental_date,
+    d_return.id AS return_date,
+    f.rental_rate,
+    rp.amount_paid,
+    CASE
+      WHEN return_date != '1970-01-01 07:00:00.0' THEN DATE_DIFF(DATE(return_date), DATE(rental_date), DAY)
+    ELSE
+    NULL
+  END
+    AS rent_duration,
+    2 AS src
+  FROM
+    `dionricky-personal.queensland.rental` r
+  LEFT JOIN
+    `dionricky-personal.queensland.inventory` i
+  ON
+    r.inventory_id = i.inventory_id
+  LEFT JOIN
+    `dionricky-personal.queensland.film` f
+  ON
+    i.film_id = f.film_id
+  LEFT JOIN (
+    SELECT
+      r.rental_id,
+      SUM(p.amount) AS amount_paid
+    FROM
+      `dionricky-personal.queensland.rental` r
+    LEFT JOIN
+      `dionricky-personal.queensland.payment` p
+    ON
+      r.rental_id = p.rental_id
+    GROUP BY
+      r.rental_id ) rp
+  ON
+    r.rental_id = rp.rental_id
+  LEFT JOIN
+    `dionricky-personal.warehouse.date_dimension` d_rental
+  ON
+    DATE(rental_date) = d_rental.full_date
+  LEFT JOIN
+    `dionricky-personal.warehouse.date_dimension` d_return
+  ON
+    DATE(COALESCE(return_date,
+        '1970-01-01 07:00:00.0')) = d_return.full_date ),
+  rental_mongo AS (
+  SELECT
+    r.filmId AS film_id,
+    c._id AS customer_id,
+    r.staffId AS staff_id,
+    NULL AS store_id,
+    d_rental.id AS rental_date,
+    d_return.id AS return_date,
+    NULL AS rental_rate,
+    p.Amount AS amount_paid,
+    CASE
+      WHEN r.Return_Date != '1970-01-01 07:00:00.0' THEN DATE_DIFF(DATE(r.Return_Date), DATE(r.Rental_Date), DAY)
+    ELSE
+    NULL
+  END
+    AS rent_duration,
+    3 AS src
+  FROM
+    `dionricky-personal.mongo.customers` c,
+    UNNEST(Rentals) AS r,
+    UNNEST(r.Payments) AS p
+  LEFT JOIN
+    `dionricky-personal.warehouse.date_dimension` d_rental
+  ON
+    DATE(r.Rental_Date) = d_rental.full_date
+  LEFT JOIN
+    `dionricky-personal.warehouse.date_dimension` d_return
+  ON
+    DATE(COALESCE(r.Return_Date,
+        '1970-01-01 07:00:00.0')) = d_return.full_date ),
+  merged AS (
+  SELECT
+    *
+  FROM
+    rental_alberta
+  UNION DISTINCT
+  SELECT
+    *
+  FROM
+    rental_queensland
+  UNION DISTINCT
+  SELECT
+    *
+  FROM
+    rental_mongo ),
+  mark_duplicate AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER(PARTITION BY film_id, customer_id ORDER BY src) AS dup_mark
+  FROM
+    merged ),
+  filtered AS (
+  SELECT
+    *
+  FROM
+    mark_duplicate
+  WHERE
+    dup_mark = 1 )
+SELECT
+  film_id,
+  customer_id,
+  staff_id,
+  store_id,
+  rental_date,
+  return_date,
+  rental_rate,
+  amount_paid,
+  rent_duration
+FROM
+  filtered;"""
+
+        parser = Parser(sql)
+
+        parsed_tables = parser.tables
+        compare_to = sorted([
+            'dionricky-personal.alberta.rental',
+            'dionricky-personal.alberta.inventory',
+            'dionricky-personal.alberta.film',
+            'dionricky-personal.alberta.payment',
+            'dionricky-personal.queensland.rental',
+            'dionricky-personal.queensland.inventory',
+            'dionricky-personal.queensland.film',
+            'dionricky-personal.queensland.payment',
+            'dionricky-personal.mongo.customers',
+            'dionricky-personal.warehouse.date_dimension'
+        ])
+
+        self.assertListEqual(parsed_tables, compare_to)

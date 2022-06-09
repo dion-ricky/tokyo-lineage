@@ -18,7 +18,22 @@ class Parser:
         _tables = [self.__clean(_table) for _table in _tables]
         _ctes = [self.__clean(_cte) for _cte in _ctes]
 
-        return [table for table in _tables if table not in _ctes]
+        clean_tables = [table for table in _tables if table not in _ctes]
+        clean_tables = self.__filter_duplicate(clean_tables)
+        clean_tables = sorted(clean_tables)
+
+        return clean_tables
+
+    def __filter_duplicate(self, tables):
+        temp_tbl = []
+
+        for table in tables:
+            if table in temp_tbl:
+                continue
+            else:
+                temp_tbl.append(table)
+        
+        return temp_tbl
 
     def __clean(self, table):
         steps = [
